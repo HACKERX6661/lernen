@@ -1,1 +1,2421 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LexiFlow ONLINE — Schulfächer, Live-Wörterbuch &amp; Lern-Konto</title>
+  <style>
+    :root {
+      --bg:#f2f5fc; --surface:rgba(255,255,255,0.88); --surface-solid:#ffffff; --surface-2:#eef2f8;
+      --text:#0f172a; --text-muted:#475569; --border:rgba(148,163,184,0.28);
+      --primary:#6366f1; --primary-hover:#4f46e5; --primary-soft:rgba(99,102,241,0.12);
+      --success:#10b981; --success-soft:rgba(16,185,129,0.13);
+      --warning:#f59e0b; --warning-soft:rgba(245,158,11,0.14);
+      --danger:#ef4444; --danger-soft:rgba(239,68,68,0.13);
+      --shadow:0 14px 36px -14px rgba(15,23,42,0.14); --radius:18px;
+    }
+    [data-theme="dark"] {
+      --bg:#070b14; --surface:rgba(17,24,39,0.84); --surface-solid:#111827; --surface-2:#1e293b;
+      --text:#f8fafc; --text-muted:#94a3b8; --border:rgba(148,163,184,0.16);
+      --primary:#818cf8; --primary-hover:#6366f1; --primary-soft:rgba(129,140,248,0.16);
+      --success:#34d399; --success-soft:rgba(52,211,153,0.14);
+      --warning:#fbbf24; --warning-soft:rgba(251,191,36,0.14);
+      --danger:#f87171; --danger-soft:rgba(248,113,113,0.15);
+      --shadow:0 16px 40px -12px rgba(0,0,0,0.6);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+      background-color:var(--bg);
+      background-image:
+        radial-gradient(at 8% 8%, rgba(99,102,241,0.22) 0px, transparent 48%),
+        radial-gradient(at 92% 12%, rgba(236,72,153,0.17) 0px, transparent 46%),
+        radial-gradient(at 50% 95%, rgba(6,182,212,0.16) 0px, transparent 50%);
+      background-attachment:fixed;
+      color:var(--text); line-height:1.5; min-height:100vh; transition:background .25s,color .25s;
+    }
+    .topbar{
+      position:sticky; top:0; z-index:70;
+      background:color-mix(in srgb,var(--surface-solid) 78%,transparent);
+      backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+      border-bottom:1px solid var(--border);
+    }
+    .topbar-inner{max-width:1260px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:1.08rem;cursor:pointer;letter-spacing:-.02em}
+    .brand-logo{
+      width:38px;height:38px;border-radius:12px;
+      background:linear-gradient(135deg,#6366f1,#ec4899,#06b6d4);
+      color:#fff;display:grid;place-items:center;font-size:1.15rem;
+      box-shadow:0 6px 18px rgba(99,102,241,0.38);
+    }
+    .nav-tabs{display:flex;gap:4px;flex-wrap:wrap}
+    .nav-btn{
+      border:1px solid transparent;background:transparent;color:var(--text-muted);
+      font-weight:700;font-size:.84rem;padding:8px 11px;border-radius:11px;cursor:pointer;
+      display:inline-flex;align-items:center;gap:5px;font-family:inherit;transition:.16s;
+    }
+    .nav-btn:hover{background:var(--surface-2);color:var(--text);transform:translateY(-1px)}
+    .nav-btn.active{background:linear-gradient(135deg,var(--primary-soft),rgba(236,72,153,0.12));color:var(--primary);border-color:color-mix(in srgb,var(--primary) 35%,transparent)}
+    .hud{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+    .pill{
+      background:var(--surface);border:1px solid var(--border);border-radius:999px;
+      padding:5px 10px;font-size:.78rem;font-weight:800;display:inline-flex;align-items:center;gap:4px;
+    }
+    .pill-fire{background:linear-gradient(135deg,rgba(245,158,11,.18),rgba(239,68,68,.16));border-color:rgba(245,158,11,.35)}
+    .icon-btn{
+      width:34px;height:34px;border-radius:10px;border:1px solid var(--border);
+      background:var(--surface);color:var(--text);cursor:pointer;display:grid;place-items:center;font-size:1rem;transition:.15s;
+    }
+    .icon-btn:hover{transform:rotate(12deg) scale(1.05)}
+    .container{max-width:1150px;margin:0 auto;padding:22px 16px 72px}
+    .view{display:none;animation:fadeSlide .25s cubic-bezier(.22,.61,.36,1)}
+    .view.active{display:block}
+    @keyframes fadeSlide{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    .card{
+      background:var(--surface);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+      border:1px solid var(--border);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);
+    }
+    .stack{display:flex;flex-direction:column;gap:16px}
+    .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .between{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    h1{font-size:clamp(1.38rem,3vw,2rem);line-height:1.18;letter-spacing:-.025em;font-weight:900}
+    h2{font-size:1.22rem;line-height:1.3;font-weight:800}
+    h3{font-size:1.02rem;font-weight:700}
+    .muted{color:var(--text-muted)}
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;gap:7px;
+      border:1px solid var(--border);background:var(--surface-solid);color:var(--text);
+      padding:9px 15px;border-radius:11px;font-weight:700;font-size:.88rem;
+      cursor:pointer;transition:all .15s cubic-bezier(.22,.61,.36,1);font-family:inherit;
+    }
+    .btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 18px -8px rgba(0,0,0,.22)}
+    .btn:disabled{opacity:.48;cursor:not-allowed}
+    .btn-primary{background:linear-gradient(135deg,#6366f1,#4f46e5);border-color:transparent;color:#fff;box-shadow:0 8px 20px -6px rgba(99,102,241,0.5)}
+    .btn-accent{background:linear-gradient(135deg,#ec4899,#8b5cf6);border-color:transparent;color:#fff;box-shadow:0 8px 20px -6px rgba(236,72,153,0.45)}
+    .btn-success{background:linear-gradient(135deg,#10b981,#059669);border-color:transparent;color:#fff}
+    .btn-warning{background:var(--warning-soft);border-color:color-mix(in srgb,var(--warning) 45%,transparent);color:var(--text)}
+    .btn-danger{background:var(--danger-soft);border-color:color-mix(in srgb,var(--danger) 40%,transparent);color:var(--danger)}
+    .btn-sm{padding:6px 11px;font-size:.8rem;border-radius:9px}
+    .btn-lg{padding:12px 21px;font-size:.97rem;border-radius:13px}
+    .badge{
+      display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;
+      font-size:.74rem;font-weight:800;background:var(--surface-2);color:var(--text-muted);border:1px solid var(--border);
+    }
+    .badge-A1,.badge-L1{background:#dcfce7;color:#166534;border-color:#86efac}
+    .badge-A2,.badge-L2{background:#dbeafe;color:#1e40af;border-color:#93c5fd}
+    .badge-B1,.badge-L3{background:#e0e7ff;color:#3730a3;border-color:#a5b4fc}
+    .badge-B2,.badge-L4{background:#f3e8ff;color:#6b21a8;border-color:#d8b4fe}
+    .badge-C1{background:#fae8ff;color:#86198f;border-color:#f0abfc}
+    .badge-C2{background:#fce7f3;color:#9d174d;border-color:#f9a8d4}
+    .badge-CUSTOM{background:#fef3c7;color:#92400e;border-color:#fde68a}
+    [data-theme="dark"] .badge-A1,[data-theme="dark"] .badge-L1{background:rgba(34,197,94,.22);color:#86efac;border-color:rgba(34,197,94,.35)}
+    [data-theme="dark"] .badge-A2,[data-theme="dark"] .badge-L2{background:rgba(59,130,246,.22);color:#93c5fd;border-color:rgba(59,130,246,.35)}
+    [data-theme="dark"] .badge-B1,[data-theme="dark"] .badge-L3{background:rgba(99,102,241,.22);color:#a5b4fc;border-color:rgba(99,102,241,.35)}
+    [data-theme="dark"] .badge-B2,[data-theme="dark"] .badge-L4{background:rgba(168,85,247,.22);color:#d8b4fe;border-color:rgba(168,85,247,.35)}
+    [data-theme="dark"] .badge-C1{background:rgba(217,70,239,.22);color:#f0abfc;border-color:rgba(217,70,239,.35)}
+    [data-theme="dark"] .badge-C2{background:rgba(236,72,153,.22);color:#f9a8d4;border-color:rgba(236,72,153,.35)}
+    [data-theme="dark"] .badge-CUSTOM{background:rgba(245,158,11,.22);color:#fcd34d;border-color:rgba(245,158,11,.35)}
 
+    .progress-track{width:100%;height:10px;background:var(--surface-2);border-radius:999px;overflow:hidden;border:1px solid var(--border)}
+    .progress-fill{height:100%;background:linear-gradient(90deg,#6366f1,#ec4899,#06b6d4);border-radius:999px;transition:width .38s ease}
+
+    .hero{background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 48%,#ec4899 100%);color:#fff;border-radius:22px;padding:28px;box-shadow:0 22px 44px -16px rgba(99,102,241,0.5)}
+    .hero p{color:rgba(255,255,255,.92)}
+
+    /* Auth Gate */
+    .auth-shell{max-width:500px;margin:28px auto;display:flex;flex-direction:column;gap:16px}
+    .auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:var(--surface-2);padding:5px;border-radius:12px}
+    .auth-tab{border:none;background:transparent;color:var(--text-muted);font-weight:800;padding:9px;border-radius:9px;cursor:pointer;font-family:inherit}
+    .auth-tab.active{background:var(--surface-solid);color:var(--primary);box-shadow:0 4px 12px rgba(0,0,0,.08)}
+
+    /* Modal */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,0.55);backdrop-filter:blur(6px);z-index:200;display:none;align-items:center;justify-content:center;padding:16px}
+    .modal-backdrop.open{display:flex}
+    .modal-card{max-width:620px;width:100%;max-height:88vh;overflow-y:auto}
+
+    .subjects-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:11px}
+    .subj-card{
+      border:2px solid var(--border);background:var(--surface);color:var(--text);
+      border-radius:16px;padding:14px;text-align:left;cursor:pointer;transition:.18s;
+      font-family:inherit;display:flex;flex-direction:column;gap:5px;position:relative;overflow:hidden;
+    }
+    .subj-card::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:var(--subj-accent,var(--primary));opacity:.8}
+    .subj-card:hover{transform:translateY(-3px);border-color:var(--subj-accent,var(--primary));box-shadow:var(--shadow)}
+    .subj-card.active{border-color:var(--subj-accent,var(--primary));background:color-mix(in srgb,var(--subj-accent,var(--primary)) 11%,var(--surface-solid))}
+
+    .level-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(122px,1fr));gap:10px}
+    .level-tile{border:2px solid var(--border);background:var(--surface);border-radius:14px;padding:11px;cursor:pointer;text-align:left;transition:.16s;position:relative;font-family:inherit;color:var(--text)}
+    .level-tile:hover{border-color:var(--primary);transform:translateY(-2px)}
+    .level-tile.active{border-color:var(--primary);background:var(--primary-soft)}
+    .rec-tag{position:absolute;top:-9px;right:8px;background:linear-gradient(135deg,#10b981,#059669);color:#fff;font-size:.66rem;font-weight:800;padding:2px 8px;border-radius:999px}
+
+    .units-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(295px,1fr));gap:15px}
+    .unit-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow);transition:.18s}
+    .unit-card:hover{transform:translateY(-2px)}
+    .unit-word-preview{max-height:220px;overflow-y:auto;border-top:1px solid var(--border);padding-top:8px;display:flex;flex-direction:column;gap:6px}
+    .mini-word{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 9px;border-radius:9px;background:var(--surface-2);font-size:.84rem}
+
+    .options-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(225px,1fr));gap:11px;margin-top:13px}
+    .option-btn{border:2px solid var(--border);background:var(--surface-solid);color:var(--text);border-radius:13px;padding:14px 15px;text-align:left;font-size:.94rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:11px;font-family:inherit;transition:.15s}
+    .option-btn:hover:not(:disabled){border-color:var(--primary);background:var(--primary-soft);transform:translateY(-1px)}
+    .option-key{width:27px;height:27px;border-radius:8px;background:var(--surface-2);border:1px solid var(--border);display:grid;place-items:center;font-size:.8rem;font-weight:800;flex-shrink:0}
+    .option-btn.correct{border-color:var(--success);background:var(--success-soft)}
+    .option-btn.wrong{border-color:var(--danger);background:var(--danger-soft)}
+
+    .match-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+    @media(max-width:600px){.match-grid{grid-template-columns:1fr}}
+    .match-col{display:flex;flex-direction:column;gap:8px}
+    .match-btn{border:2px solid var(--border);background:var(--surface-solid);color:var(--text);border-radius:11px;padding:12px 13px;font-weight:700;font-size:.9rem;cursor:pointer;text-align:left;font-family:inherit;transition:.14s}
+    .match-btn.selected{border-color:var(--primary);background:var(--primary-soft)}
+    .match-btn.matched{border-color:var(--success);background:var(--success-soft);opacity:.55;cursor:default}
+    .match-btn.err{border-color:var(--danger);background:var(--danger-soft)}
+
+    .flashcard-wrap{perspective:1200px;width:100%;max-width:650px;margin:0 auto}
+    .flashcard{position:relative;width:100%;min-height:310px;cursor:pointer}
+    .flashcard-inner{position:relative;width:100%;min-height:310px;transform-style:preserve-3d;transition:transform .52s cubic-bezier(.22,.61,.36,1)}
+    .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+    .flashcard-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--surface-solid);border:2px solid var(--border);border-radius:22px;padding:24px;box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px}
+    .flashcard-back{transform:rotateY(180deg);border-color:color-mix(in srgb,var(--primary) 45%,var(--border));background:linear-gradient(160deg,var(--surface-solid),var(--primary-soft))}
+    .flash-word{font-size:clamp(1.4rem,3.6vw,2.15rem);font-weight:900;letter-spacing:-.02em}
+
+    .gz-svg-box{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:7px 13px;display:inline-flex;align-items:center;justify-content:center}
+    .gz-canvas-wrap{border:2px solid var(--border);border-radius:14px;overflow:hidden;background:#fff;touch-action:none}
+    canvas#gzCanvas{display:block;width:100%;height:auto;cursor:crosshair}
+
+    input[type="text"],input[type="password"],input[type="search"],select,textarea{
+      width:100%;padding:10px 13px;border-radius:11px;border:1.5px solid var(--border);
+      background:var(--surface-solid);color:var(--text);font-family:inherit;font-size:.93rem;
+    }
+    input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary)}
+
+    .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(195px,1fr));gap:11px}
+    .dict-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(275px,1fr));gap:11px}
+    .dict-item{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:7px}
+    .online-box{border:2px dashed color-mix(in srgb,var(--primary) 50%,var(--border));background:var(--primary-soft);border-radius:var(--radius);padding:18px}
+
+    .word-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+    .wchip{border:1px solid var(--border);border-radius:10px;padding:5px 10px;font-size:.86rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:.14s;font-family:inherit;color:var(--text)}
+    .wchip:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.1)}
+
+    .score-bars{display:grid;grid-template-columns:repeat(auto-fit,minmax(95px,1fr));gap:9px;margin:12px 0}
+    .score-col{background:var(--surface-2);border:1px solid var(--border);border-radius:11px;padding:10px;text-align:center}
+    .feedback-banner{padding:12px 15px;border-radius:12px;font-weight:700;margin-top:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+    .feedback-banner.ok{background:var(--success-soft);border:1px solid var(--success)}
+    .feedback-banner.err{background:var(--danger-soft);border:1px solid var(--danger)}
+    .toast{position:fixed;bottom:20px;right:20px;background:var(--text);color:var(--surface-solid);padding:11px 18px;border-radius:12px;font-weight:700;font-size:.88rem;box-shadow:0 12px 28px rgba(0,0,0,.28);z-index:999;opacity:0;transform:translateY(10px);pointer-events:none;transition:.2s}
+    .toast.show{opacity:1;transform:translateY(0)}
+    .speaker-btn{border:1px solid var(--border);background:var(--surface-2);color:var(--text);border-radius:999px;padding:4px 10px;font-size:.8rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:4px;font-family:inherit}
+    .speaker-btn:hover{background:var(--primary-soft);border-color:var(--primary);color:var(--primary)}
+    #confettiCanvas{position:fixed;inset:0;pointer-events:none;z-index:998}
+    code{background:var(--surface-2);padding:2px 6px;border-radius:6px;font-size:.82rem}
+  </style>
+</head>
+<body>
+  <canvas id="confettiCanvas"></canvas>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand" id="brandHomeBtn">
+        <div class="brand-logo">🚀</div>
+        <div>
+          <div>LexiFlow <span style="background:linear-gradient(135deg,#6366f1,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">ONLINE</span></div>
+          <div style="font-size:.69rem;font-weight:700;color:var(--text-muted)">GitHub Edition · 10 Schulfächer · Live-Wörterbuch</div>
+        </div>
+      </div>
+
+      <nav class="nav-tabs" id="mainNav" style="display:none;">
+        <button class="nav-btn" data-view="course">🏫 Fächer &amp; Kurse</button>
+        <button class="nav-btn" data-view="test">🎯 Einstufungstest</button>
+        <button class="nav-btn" data-view="free">🏋️ Alle Übungen</button>
+        <button class="nav-btn" data-view="gzlab">📐 GZ-Zeichenbrett</button>
+        <button class="nav-btn" data-view="dict">🔍 Live-Wörterbuch &amp; Einschätzer</button>
+        <button class="nav-btn" data-view="custom">➕ Custom</button>
+      </nav>
+
+      <div class="hud">
+        <span class="pill" id="hudRankPill" style="display:none;">🌱 Lvl 1</span>
+        <span class="pill pill-fire" id="hudStreakPill" style="display:none;">🔥 0</span>
+        <span class="pill" id="hudXpPill" style="display:none;">⚡ <span id="hudXp">0</span> XP</span>
+        <button class="pill" id="hudUserBtn" style="cursor:pointer;" title="Konto / Cloud-Sync">🔑 Anmelden</button>
+        <button class="icon-btn" id="themeToggle" title="Hell / Dunkel">🌙</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- 0. AUTH GATE (SIGN IN / SIGN UP) -->
+    <section id="view-auth" class="view">
+      <div class="auth-shell">
+        <div class="hero" style="text-align:center;padding:24px;">
+          <div style="font-size:2.4rem;">🎓</div>
+          <h1 style="margin-top:6px;">Willkommen bei LexiFlow</h1>
+          <p style="margin-top:6px;font-size:.94rem;">Melde dich an oder erstelle dein Konto, um deine XP, Level, Kurse und Custom-Wörter zu speichern.</p>
+        </div>
+
+        <div class="card stack">
+          <div class="between">
+            <span class="badge" id="cloudStatusBadge">💻 Browser-Konto</span>
+            <button class="btn btn-sm" id="openCloudSetupBtn">☁️ Cloud-Sync einrichten</button>
+          </div>
+
+          <div class="auth-tabs">
+            <button class="auth-tab active" id="tabSignIn">🔑 Anmelden</button>
+            <button class="auth-tab" id="tabSignUp">✨ Registrieren</button>
+          </div>
+
+          <form id="authForm" class="stack">
+            <div>
+              <label style="font-weight:700;font-size:.84rem;display:block;margin-bottom:4px;">Nutzername</label>
+              <input type="text" id="authUsername" autocomplete="username" placeholder="z. B. alex_2026" required />
+              <div id="usernameHint" class="muted" style="font-size:.78rem;margin-top:4px;"></div>
+            </div>
+            <div>
+              <label style="font-weight:700;font-size:.84rem;display:block;margin-bottom:4px;">Passwort</label>
+              <input type="password" id="authPassword" autocomplete="current-password" placeholder="Mindestens 4 Zeichen" required />
+            </div>
+            <div id="authPassConfirmWrap" style="display:none;">
+              <label style="font-weight:700;font-size:.84rem;display:block;margin-bottom:4px;">Passwort wiederholen</label>
+              <input type="password" id="authPassword2" autocomplete="new-password" placeholder="Passwort bestätigen" />
+            </div>
+            <div id="authErrorMsg" style="display:none;color:var(--danger);font-weight:700;font-size:.86rem;"></div>
+            <button type="submit" class="btn btn-primary btn-lg" id="authSubmitBtn">🔑 Jetzt anmelden</button>
+          </form>
+
+          <div class="between" style="border-top:1px solid var(--border);padding-top:12px;">
+            <span class="muted" style="font-size:.82rem;">Nur kurz ausprobieren?</span>
+            <button class="btn btn-sm" id="guestLoginBtn">👀 Als Gast starten</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 1. SUBJECTS & COURSES -->
+    <section id="view-course" class="view">
+      <div class="stack">
+        <div class="between">
+          <div>
+            <h1>Deine 10 Schulfächer &amp; Kurse</h1>
+            <p class="muted">Angemeldet als <strong id="courseUserLabel">Gast</strong> · Fortschritt wird automatisch gesichert <span id="syncIndicator"></span></p>
+          </div>
+          <div class="row">
+            <button class="btn btn-primary" id="openSubjTestBtn">🎯 Fach-Test starten</button>
+            <button class="btn btn-accent" id="openComboTestBtn">🌟 Großer Schul-Check</button>
+          </div>
+        </div>
+
+        <div class="subjects-grid" id="subjectsGrid"></div>
+        <div class="level-strip" id="courseLevelStrip"></div>
+
+        <div class="card stack">
+          <div class="between">
+            <div>
+              <div class="row">
+                <span class="badge" id="activeLevelBadge">A1</span>
+                <h2 id="activeLevelTitle">Anfänger</h2>
+                <span class="badge" id="activeLevelRecBadge" style="display:none;background:var(--success-soft);color:var(--success);border-color:var(--success);">⭐ Empfohlen</span>
+              </div>
+              <p class="muted" id="activeLevelDesc" style="margin-top:4px;"></p>
+            </div>
+            <div class="row">
+              <button class="btn btn-primary" id="trainWholeLevelQuizBtn">⚡ Level-Mix Quiz</button>
+              <button class="btn" id="trainWholeLevelMatchBtn">🔗 Zuordnung</button>
+              <button class="btn" id="trainWholeLevelCardsBtn">🃏 Lernkarten</button>
+              <button class="btn btn-accent" id="launchGeneratorFromCourseBtn" style="display:none;">♾️ Endlos-Generator</button>
+            </div>
+          </div>
+          <div>
+            <div class="between" style="font-size:.84rem;margin-bottom:5px;">
+              <strong>Fortschritt in diesem Level</strong>
+              <span id="activeLevelProgressText">0 / 0 gemeistert</span>
+            </div>
+            <div class="progress-track"><div class="progress-fill" id="activeLevelProgressFill" style="width:0%"></div></div>
+          </div>
+        </div>
+
+        <div id="reviewBoxCard" class="card" style="display:none;border-color:var(--warning);background:var(--warning-soft);">
+          <div class="between">
+            <div>
+              <h3>🔁 Wiederholungs-Box (<span id="reviewCount">0</span> schwierige Inhalte)</h3>
+              <p class="muted" style="font-size:.86rem;">Alles, was du nochmal festigen solltest, landet automatisch hier.</p>
+            </div>
+            <div class="row">
+              <button class="btn btn-primary btn-sm" id="practiceReviewCardsBtn">🃏 Lernkarten</button>
+              <button class="btn btn-sm" id="practiceReviewQuizBtn">❓ Quiz</button>
+              <button class="btn btn-sm" id="practiceReviewTypeBtn">⌨️ Schreiben</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="units-grid" id="unitsGrid"></div>
+      </div>
+    </section>
+
+    <!-- 2. PLACEMENT TEST -->
+    <section id="view-test" class="view">
+      <div id="testIntro" class="stack">
+        <div class="hero">
+          <span class="badge" style="background:rgba(255,255,255,.22);color:#fff;border-color:rgba(255,255,255,.35);margin-bottom:8px;">🎯 Einstufungstest</span>
+          <h1>Finde dein genaues Level in jedem Fach!</h1>
+          <p style="margin-top:6px;max-width:720px;">Mach den Test für ein einzelnes Fach (z. B. Englisch A1–C2, Mathe, Deutsch, GZ, Geo, Bio …) oder den Großen Schul-Check über alle 10 Fächer!</p>
+          <div class="row" style="margin-top:16px;">
+            <div style="min-width:235px;">
+              <select id="testSubjectSelect" style="background:#fff;color:#0f172a;border:none;font-weight:800;">
+                <option value="COMBO">🌟 Großer Schul-Check (Alle 10 Fächer)</option>
+              </select>
+            </div>
+            <button class="btn btn-lg" id="startPlacementBtn" style="background:#fff;color:#312e81;border:none;font-weight:900;">🚀 Test starten</button>
+            <button class="btn btn-lg" id="skipToCourseBtn" style="background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.35);">Zu den Kursen →</button>
+          </div>
+        </div>
+        <div id="placementSummaryCards" class="card stack" style="display:none;">
+          <h3>Deine bisherigen Einstufungen</h3>
+          <div class="row" id="placementBadgesRow"></div>
+        </div>
+      </div>
+
+      <div id="testRunner" class="card stack" style="display:none;">
+        <div class="between">
+          <div>
+            <span class="badge" id="testLvlBadge">Stufe</span>
+            <span class="muted" style="font-size:.88rem;margin-left:8px;">Frage <strong id="testStepNum">1</strong> von <strong id="testTotalNum">10</strong></span>
+          </div>
+          <button class="btn btn-sm" id="cancelTestBtn">Abbrechen</button>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="testProgressFill" style="width:0%"></div></div>
+        <div>
+          <div class="muted" style="font-size:.84rem;font-weight:700;" id="testCategoryHint"></div>
+          <div id="testSvgHolder" style="margin:8px 0;"></div>
+          <h2 id="testPrompt" style="font-size:1.32rem;margin-top:4px;"></h2>
+          <div class="options-grid" id="testOptions"></div>
+          <div id="testFeedback"></div>
+        </div>
+      </div>
+
+      <div id="testResult" class="card stack" style="display:none;">
+        <div class="between">
+          <div>
+            <span class="badge badge-B1" style="margin-bottom:6px;">✅ Auswertung fertig</span>
+            <h1 id="resultHeadline">Dein Ergebnis</h1>
+            <p class="muted" id="resultDescription" style="margin-top:4px;max-width:660px;"></p>
+          </div>
+          <div style="text-align:center;background:var(--primary-soft);padding:14px 24px;border-radius:15px;">
+            <div style="font-size:.78rem;font-weight:800;color:var(--primary);">PUNKTE</div>
+            <div style="font-size:1.95rem;font-weight:900;color:var(--primary);" id="resultTotalScore">0 / 10</div>
+          </div>
+        </div>
+        <div class="score-bars" id="resultBars"></div>
+        <div class="row">
+          <button class="btn btn-primary btn-lg" id="acceptCourseBtn">🚀 Passenden Kurs starten</button>
+          <button class="btn btn-lg" id="retakeTestBtn">🔄 Test wiederholen</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. PRACTICE ARENA -->
+    <section id="view-practice" class="view">
+      <div class="stack">
+        <div class="between">
+          <div class="row">
+            <button class="btn btn-sm" id="exitPracticeBtn">← Zurück</button>
+            <div><h2 id="practiceTitle">Training</h2><div class="muted" style="font-size:.82rem;" id="practiceSubtitle"></div></div>
+          </div>
+          <div class="row">
+            <button class="btn btn-sm" id="toggleDirBtn">🔄 Richtung: <strong id="dirLabel">Frage → Antwort</strong></button>
+            <span class="pill" id="practiceCounter">1 / 10</span>
+          </div>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="practiceProgressFill" style="width:0%"></div></div>
+        <div id="practiceStage"></div>
+      </div>
+    </section>
+
+    <!-- 4. ALL EXERCISES & GENERATORS -->
+    <section id="view-free" class="view">
+      <div class="stack">
+        <div class="card stack">
+          <div>
+            <h1>🏋️ Alle Übungen &amp; Freies Training</h1>
+            <p class="muted">Übe jedes Fach, alle Level, Custom-Karten oder nutze den Endlos-Generator!</p>
+          </div>
+          <div class="form-grid">
+            <div><label style="font-weight:700;font-size:.84rem;display:block;margin-bottom:4px;">Schulfach</label><select id="freeSubj"></select></div>
+            <div>
+              <label style="font-weight:700;font-size:.84rem;display:block;margin-bottom:4px;">Quelle / Filter</label>
+              <select id="freeLvl">
+                <option value="ALL">Alle Level dieses Fachs</option>
+                <option value="ACTIVE">Mein aktuelles Kurs-Level</option>
+                <option value="REVIEW">Nur schwierige Inhalte</option>
+                <option value="CUSTOM">Nur Custom-Inhalte</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-weight:700;font-size:.84rem;display:block;margin-bottom:4px;">Übungs-Modus</label>
+              <select id="freeMode">
+                <option value="flashcard">🃏 Lernkarten</option>
+                <option value="quiz">❓ Multiple-Choice Quiz</option>
+                <option value="type">⌨️ Schreib- &amp; Rechentraining</option>
+                <option value="match">🔗 Paar-Zuordnung (Matching)</option>
+              </select>
+            </div>
+            <div><label style="font-weight:700;font-size:.84rem;display:block;margin-bottom:4px;">Anzahl</label><select id="freeCount"><option value="10">10</option><option value="20" selected>20</option><option value="30">30</option><option value="9999">Alle</option></select></div>
+          </div>
+          <div class="row"><button class="btn btn-primary btn-lg" id="startFreeSessionBtn">🚀 Training starten</button></div>
+        </div>
+
+        <div class="card stack">
+          <div><h2>♾️ Endlos-Aufgaben-Generator</h2><p class="muted">Erzeugt jederzeit unendlich neue Aufgaben!</p></div>
+          <div class="form-grid">
+            <div>
+              <label style="font-weight:700;font-size:.84rem;display:block;margin-bottom:4px;">Generator-Fach</label>
+              <select id="genSubject">
+                <option value="math">📐 Mathematik (Rechnen, Gleichungen, Pythagoras, Vektoren, Ableiten)</option>
+                <option value="gz">📏 GZ (Winkel, Linienarten, Maßstab, Risse, Schrägriss)</option>
+                <option value="de">📝 Deutsch (das/dass, seid/seit, Grammatik, Stilmittel)</option>
+                <option value="geo">🌍 Geografie (Bundesländer, Hauptstädte Österreich/Europa/Welt)</option>
+                <option value="bio">🧬 Biologie (DNA-Basenpaarung, Zellen, Körper, Evolution)</option>
+                <option value="phys">⚡ Physik (Geschwindigkeit, Ohmsches Gesetz, Formeln)</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-weight:700;font-size:.84rem;display:block;margin-bottom:4px;">Schwierigkeit</label>
+              <select id="genLevel"><option value="L1">Level 1 · Einstieg</option><option value="L2" selected>Level 2 · Mittelstufe</option><option value="L3">Level 3 · Aufbau</option><option value="L4">Level 4 · Profi / Matura</option></select>
+            </div>
+            <div><label style="font-weight:700;font-size:.84rem;display:block;margin-bottom:4px;">Antwort-Typ</label><select id="genMode"><option value="quiz">❓ Quiz (12 Aufgaben)</option><option value="type">⌨️ Eintippen (10 Aufgaben)</option></select></div>
+          </div>
+          <div class="row"><button class="btn btn-accent btn-lg" id="startGeneratorBtn">⚡ Endlos-Übung starten</button></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. GZ DRAWING BOARD -->
+    <section id="view-gzlab" class="view">
+      <div class="stack">
+        <div class="card stack">
+          <div class="between">
+            <div><h1>📐 GZ-Zeichenbrett &amp; Konstruktionen</h1><p class="muted">Raster: 2 Kästchen = 1,0 cm. Mit Winkelanzeige, Strich-/Achsenlinien &amp; Zirkel!</p></div>
+            <button class="btn btn-primary btn-sm" id="gzNextTaskBtn">🎲 Neue GZ-Aufgabe</button>
+          </div>
+          <div class="feedback-banner ok" style="margin-top:0;">
+            <div><strong id="gzTaskTitle">Aufgabe 1:</strong> <span id="gzTaskDesc">Zeichne eine waagrechte Volllinie der Länge 4,0 cm (8 Kästchen)!</span></div>
+            <button class="btn btn-primary btn-sm" id="gzCheckDrawBtn">✅ Prüfen</button>
+          </div>
+          <div class="row">
+            <button class="btn btn-sm btn-primary" data-gztool="line">📏 Volllinie</button>
+            <button class="btn btn-sm" data-gztool="dash">┄ Strichlinie</button>
+            <button class="btn btn-sm" data-gztool="axis">┈ Strichpunkt</button>
+            <button class="btn btn-sm" data-gztool="circle">⭕ Zirkel</button>
+            <button class="btn btn-sm" id="gzUndoBtn">↩️ Rückgängig</button>
+            <button class="btn btn-sm btn-danger" id="gzClearBtn">🗑️ Löschen</button>
+            <span class="pill" id="gzReadout">Bereit · Rasterfang 0,5 cm</span>
+          </div>
+          <div class="gz-canvas-wrap"><canvas id="gzCanvas" width="900" height="420"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. LIVE DICTIONARY & WORD/SENTENCE EVALUATOR (NO DOWNLOAD NEEDED!) -->
+    <section id="view-dict" class="view">
+      <div class="stack">
+        <div class="card stack" style="border-color:color-mix(in srgb,var(--primary) 42%,var(--border));">
+          <div>
+            <h1>🔍 Wort- &amp; Satz-Einschätzer</h1>
+            <p class="muted">Gib <strong>jedes beliebige Wort oder einen ganzen Satz</strong> (Englisch oder Deutsch) ein – prüft direkt online das Niveau (A1–C2 / L1–L4), Rechtschreibung (via Datamuse &amp; Wiktionary), Übersetzung, Aussprache &amp; Selbsteinschätzung!</p>
+          </div>
+          <div class="row">
+            <div style="flex:1;min-width:240px;"><input type="text" id="evalInput" placeholder="Wort oder Satz eingeben (z. B. Resilience helps you overcome obstacles. oder Die Fotosynthese erzeugt Sauerstoff.)" /></div>
+            <select id="evalLang" style="width:auto;min-width:140px;"><option value="auto">Sprache: Auto</option><option value="en">Englisch (EN → DE)</option><option value="de">Deutsch (DE → EN)</option></select>
+            <button class="btn btn-accent" id="runEvalBtn">✨ Einschätzen</button>
+          </div>
+          <div id="evalResultBox" style="display:none;"></div>
+        </div>
+
+        <div class="card stack">
+          <div class="between">
+            <div>
+              <h2>🌐 Direkte Live-Wörterbuch-Suche (Englisch &amp; Deutsch)</h2>
+              <p class="muted" style="font-size:.87rem;">Kein Herunterladen nötig! Tippe ein Wort ein – die App durchsucht <strong>alle lokalen Schulfächer</strong> UND sucht gleichzeitig <strong>live online in Englisch (Datamuse/DictionaryAPI) &amp; Deutsch (Wiktionary)</strong>.</p>
+            </div>
+            <button class="btn btn-primary btn-sm" id="practiceFilteredDictBtn">🏋️ Treffer üben</button>
+          </div>
+          <div class="row">
+            <div style="flex:1;min-width:210px;"><input type="search" id="dictSearchInput" placeholder="Suche direkt in Englisch, Deutsch &amp; allen Schulfächern..." /></div>
+            <select id="dictSubjectFilter" style="width:auto;min-width:170px;"><option value="ALL">Alle Fächer</option></select>
+            <button class="btn btn-primary" id="forceLiveSearchBtn">🌐 Live suchen</button>
+          </div>
+          <div class="between"><span class="muted" style="font-size:.84rem;" id="dictMatchCount"></span></div>
+          <div class="dict-list" id="dictList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. CUSTOM & ACCOUNT -->
+    <section id="view-custom" class="view">
+      <div class="stack">
+        <div class="card stack">
+          <div>
+            <h1>➕ Custom-Wörter, Sätze &amp; Import</h1>
+            <p class="muted">Füge eigene Wörter, ganze Sätze oder Fachkarten zu deinem Konto hinzu.</p>
+          </div>
+          <form id="addWordForm" class="stack">
+            <div class="form-grid">
+              <div><label style="font-weight:700;font-size:.83rem;">Fach</label><select id="newSubj"></select></div>
+              <div><label style="font-weight:700;font-size:.83rem;">Wort / Satz / Frage *</label><input type="text" id="newEn" required placeholder="z. B. sustainable oder I am ready." /></div>
+              <div><label style="font-weight:700;font-size:.83rem;">Übersetzung / Antwort *</label><input type="text" id="newDe" required placeholder="z. B. nachhaltig oder Ich bin bereit." /></div>
+              <div>
+                <label style="font-weight:700;font-size:.83rem;">Level</label>
+                <select id="newLvl"><option value="CUSTOM">⭐ Custom</option><option value="A1">A1</option><option value="A2">A2</option><option value="B1">B1</option><option value="B2">B2</option><option value="C1">C1</option><option value="C2">C2</option><option value="L1">L1</option><option value="L2">L2</option><option value="L3">L3</option><option value="L4">L4</option></select>
+              </div>
+            </div>
+            <div class="form-grid">
+              <div><label style="font-weight:700;font-size:.83rem;">Thema</label><input type="text" id="newCat" value="Custom" /></div>
+              <div><label style="font-weight:700;font-size:.83rem;">Beispiel / Hinweis</label><input type="text" id="newEx" placeholder="Optional" /></div>
+            </div>
+            <div class="row"><button type="submit" class="btn btn-primary">💾 Speichern</button></div>
+          </form>
+        </div>
+
+        <div class="card stack">
+          <div>
+            <h2>📥 Massen-Import (TXT / CSV)</h2>
+            <p class="muted" style="font-size:.86rem;">Format pro Zeile: <code>frage;antwort;fach(en/de/math/gz/geo/bio/hist/phys/info/art);level;beispiel</code></p>
+          </div>
+          <textarea id="bulkImportText" rows="4" placeholder="ephemeral;vergänglich;en;C2;Fame is ephemeral.&#10;Mitose;Zellteilung;bio;L3;2 identische Tochterzellen"></textarea>
+          <div class="row">
+            <button class="btn btn-primary" id="runBulkImportBtn">📥 Importieren</button>
+            <label class="btn" style="cursor:pointer;">📂 TXT / CSV laden<input type="file" id="bulkFileInput" accept=".txt,.csv" style="display:none;" /></label>
+          </div>
+        </div>
+
+        <div class="card stack">
+          <div class="between">
+            <h2>⭐ Deine Custom-Inhalte (<span id="customCount">0</span>)</h2>
+            <div class="row">
+              <button class="btn btn-sm" id="exportDataBtn">⬇️ Backup (.JSON)</button>
+              <button class="btn btn-sm btn-danger" id="resetProgressBtn">🗑️ Fortschritt zurücksetzen</button>
+            </div>
+          </div>
+          <div class="dict-list" id="customWordList"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ACCOUNT & CLOUD SETUP MODAL -->
+  <div class="modal-backdrop" id="cloudModal">
+    <div class="card stack modal-card">
+      <div class="between">
+        <h2>👤 Konto &amp; ☁️ Cloud-Sync (GitHub)</h2>
+        <button class="btn btn-sm" id="closeCloudModalBtn">✕</button>
+      </div>
+      <div id="loggedAccountBox" style="display:none;" class="stack">
+        <div class="feedback-banner ok" style="margin-top:0;">
+          <span>Angemeldet als: <strong id="modalUsername"></strong> (<span id="modalSyncType">Browser</span>)</span>
+          <button class="btn btn-danger btn-sm" id="logoutBtn">🚪 Abmelden</button>
+        </div>
+      </div>
+      <div class="stack" style="font-size:.88rem;">
+        <h3>So aktivierst du echtes Cloud-Login für alle Geräte auf GitHub Pages (gratis via Supabase):</h3>
+        <ol style="margin-left:18px;display:flex;flex-direction:column;gap:6px;">
+          <li>Auf <strong>supabase.com</strong> kostenloses Projekt anlegen.</li>
+          <li>Im <strong>SQL Editor</strong> diesen Code ausführen:
+            <pre style="background:var(--surface-2);padding:9px;border-radius:9px;overflow-x:auto;font-size:.76rem;margin-top:4px;">create table lexiflow_users (
+  username text primary key,
+  salt text not null,
+  pass_hash text not null,
+  progress jsonb not null default '{}'::jsonb,
+  updated_at timestamptz default now()
+);
+alter table lexiflow_users enable row level security;
+create policy "public_access" on lexiflow_users for all using (true) with check (true);</pre>
+          </li>
+          <li><strong>Project URL</strong> &amp; <strong>anon public key</strong> hier eintragen (oder fix in <code>CLOUD_CONFIG</code> im Code speichern, dann gilt es für alle Besucher deiner GitHub-Seite!):</li>
+        </ol>
+        <div class="form-grid">
+          <input type="text" id="cfgSupabaseUrl" placeholder="https://deinprojekt.supabase.co" />
+          <input type="text" id="cfgSupabaseKey" placeholder="eyJhbGciOi... (anon key)" />
+        </div>
+        <div class="row">
+          <button class="btn btn-primary" id="saveCloudCfgBtn">☁️ Cloud verbinden &amp; testen</button>
+          <button class="btn btn-sm btn-danger" id="clearCloudCfgBtn">Cloud trennen</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      // ===========================================================
+      // OPTIONAL: FÜR GLOBALES CLOUD-LOGIN AUF GITHUB PAGES HIER EINTRAGEN:
+      // ===========================================================
+      const DEFAULT_CLOUD_CONFIG = { url: "", key: "" };
+
+      const SUBJECTS = {
+        en:   { id:"en",   name:"Englisch",      icon:"🇬🇧", color:"#6366f1", lang:"en-US", hasGen:false, levels:["A1","A2","B1","B2","C1","C2"], desc:"Vokabeln A1–C2 + Live-Wörterbuch" },
+        math: { id:"math", name:"Mathematik",    icon:"📐", color:"#06b6d4", lang:"de-DE", hasGen:true,  levels:["L1","L2","L3","L4"], desc:"Formeln, Gleichungen & Rechengenerator" },
+        de:   { id:"de",   name:"Deutsch",       icon:"📝", color:"#f43f5e", lang:"de-DE", hasGen:true,  levels:["L1","L2","L3","L4"], desc:"Rechtschreibung, Fälle & Wiktionary" },
+        gz:   { id:"gz",   name:"GZ (Zeichnen)", icon:"📏", color:"#8b5cf6", lang:"de-DE", hasGen:true,  levels:["L1","L2","L3","L4"], desc:"Linien, Winkel, Risse + Zeichenbrett" },
+        geo:  { id:"geo",  name:"Geografie",     icon:"🌍", color:"#10b981", lang:"de-DE", hasGen:true,  levels:["L1","L2","L3","L4"], desc:"Österreich, Europa, Welt & Klima" },
+        bio:  { id:"bio",  name:"Biologie",      icon:"🧬", color:"#22c55e", lang:"de-DE", hasGen:true,  levels:["L1","L2","L3","L4"], desc:"Natur, Mensch, Zelle, DNA & Evolution" },
+        hist: { id:"hist", name:"Geschichte",    icon:"🏛️", color:"#f59e0b", lang:"de-DE", hasGen:false, levels:["L1","L2","L3","L4"], desc:"Antike, Neuzeit, Österreich & Politik" },
+        phys: { id:"phys", name:"Physik",        icon:"⚡", color:"#0ea5e9", lang:"de-DE", hasGen:true,  levels:["L1","L2","L3","L4"], desc:"Einheiten, Mechanik, Optik & Strom" },
+        info: { id:"info", name:"Informatik",    icon:"💻", color:"#64748b", lang:"de-DE", hasGen:false, levels:["L1","L2","L3","L4"], desc:"Hardware, Netzwerke, Code, SQL & KI" },
+        art:  { id:"art",  name:"Musik & Kunst", icon:"🎨", color:"#ec4899", lang:"de-DE", hasGen:false, levels:["L1","L2","L3","L4"], desc:"Noten, Instrumente, Farben & Epochen" }
+      };
+
+      const LEVEL_INFO = {
+        A1:{title:"A1 · Anfänger",desc:"Alltagswörter, Familie, Essen, Zahlen und Basis-Verben."},
+        A2:{title:"A2 · Grundlagen",desc:"Reisen, Freizeit, Schule, Beruf, Gesundheit und Gefühle."},
+        B1:{title:"B1 · Mittelstufe",desc:"Meinungen, Umwelt, Arbeitswelt & Phrasal Verbs."},
+        B2:{title:"B2 · Gute Mittelstufe",desc:"Wirtschaft, Wissenschaft, Medien & abstrakte Themen."},
+        C1:{title:"C1 · Fortgeschritten",desc:"Akademische Sprache, Psychologie, Politik & Präzision."},
+        C2:{title:"C2 · Exzellenz",desc:"Rhetorik, Literatur, feine Nuancen & Hochsprache."},
+        L1:{title:"Level 1 · Einstieg",desc:"Basiswissen & Grundlagen (1.–2. Klasse)."},
+        L2:{title:"Level 2 · Mittelstufe",desc:"Aufbauwissen & zentrale Regeln (3.–4. Klasse)."},
+        L3:{title:"Level 3 · Aufbau",desc:"Erweiterte Fachbegriffe & Formeln (Oberstufe)."},
+        L4:{title:"Level 4 · Profi / Matura",desc:"Prüfungsniveau mit Tiefenwissen."},
+        CUSTOM:{title:"⭐ Custom / Eigene",desc:"Deine gespeicherten, eingeschätzten und importierten Inhalte."}
+      };
+
+      const RAW_DATA = {
+        en: [
+          ["family","die Familie","A1","Alltag & Familie","My family lives in Austria."],
+          ["mother","die Mutter","A1","Alltag & Familie","My mother cooks well."],
+          ["father","der Vater","A1","Alltag & Familie","My father works in Vienna."],
+          ["friend","der Freund / Freundin","A1","Alltag & Familie","She is my best friend."],
+          ["house","das Haus","A1","Alltag & Familie","They live in a white house."],
+          ["room","das Zimmer","A1","Alltag & Familie","My room has a big window."],
+          ["table","der Tisch","A1","Alltag & Familie","The keys are on the table."],
+          ["chair","der Stuhl","A1","Alltag & Familie","Sit down on this chair."],
+          ["window","das Fenster","A1","Alltag & Familie","Open the window for fresh air."],
+          ["door","die Tür","A1","Alltag & Familie","Close the door behind you."],
+          ["water","das Wasser","A1","Alltag & Familie","I drink a glass of water."],
+          ["bread","das Brot","A1","Alltag & Familie","We buy fresh bread daily."],
+          ["apple","der Apfel","A1","Alltag & Familie","This red apple is sweet."],
+          ["coffee","der Kaffee","A1","Alltag & Familie","He drinks black coffee."],
+          ["morning","der Morgen","A1","Alltag & Familie","Good morning, everyone!"],
+          ["night","die Nacht","A1","Alltag & Familie","Stars shine at night."],
+          ["day","der Tag","A1","Alltag & Familie","Today is a sunny day."],
+          ["time","die Zeit","A1","Alltag & Familie","I have time after school."],
+          ["today","heute","A1","Alltag & Familie","What are your plans today?"],
+          ["tomorrow","morgen","A1","Alltag & Familie","See you tomorrow morning."],
+          ["yesterday","gestern","A1","Alltag & Familie","I saw him yesterday."],
+          ["always","immer","A1","Alltag & Familie","She always arrives on time."],
+          ["never","nie / niemals","A1","Alltag & Familie","I never drink soda."],
+          ["to go","gehen / fahren","A1","Verben & Schule","We go to school by bus."],
+          ["to come","kommen","A1","Verben & Schule","Please come to my party."],
+          ["to eat","essen","A1","Verben & Schule","I eat breakfast at seven."],
+          ["to drink","trinken","A1","Verben & Schule","Do you want to drink tea?"],
+          ["to sleep","schlafen","A1","Verben & Schule","Sleep eight hours every night."],
+          ["to work","arbeiten","A1","Verben & Schule","I work from Monday to Friday."],
+          ["to learn","lernen","A1","Verben & Schule","We learn English daily."],
+          ["to read","lesen","A1","Verben & Schule","She likes to read books."],
+          ["to write","schreiben","A1","Verben & Schule","Write your name here."],
+          ["to speak","sprechen","A1","Verben & Schule","Do you speak English?"],
+          ["good","gut","A1","Verben & Schule","That is a good idea."],
+          ["bad","schlecht","A1","Verben & Schule","The weather is bad today."],
+          ["big","groß","A1","Verben & Schule","They have a big dog."],
+          ["small","klein","A1","Verben & Schule","This kitchen is small."],
+          ["new","neu","A1","Verben & Schule","I bought a new jacket."],
+          ["old","alt","A1","Verben & Schule","This castle is very old."],
+          ["happy","glücklich","A1","Verben & Schule","I am happy to see you."],
+          ["tired","müde","A1","Verben & Schule","I am tired after sport."],
+          ["school","die Schule","A1","Verben & Schule","Children walk to school."],
+          ["teacher","der Lehrer / Lehrerin","A1","Verben & Schule","Our teacher is helpful."],
+          ["book","das Buch","A1","Verben & Schule","Open your English book."],
+          ["question","die Frage","A1","Verben & Schule","Can I ask a question?"],
+          ["answer","die Antwort","A1","Verben & Schule","Write the right answer."],
+          ["money","das Geld","A1","Verben & Schule","I need money for the bus."],
+          ["train","der Zug","A1","Verben & Schule","The train leaves at ten."],
+          ["city","die Stadt","A1","Verben & Schule","Graz is a lovely city."],
+          ["name","der Name","A1","Verben & Schule","What is your first name?"],
+
+          ["holiday","der Urlaub / Feiertag","A2","Reisen & Alltag","We spent our holiday in Spain."],
+          ["luggage","das Gepäck","A2","Reisen & Alltag","My luggage is heavy."],
+          ["flight","der Flug","A2","Reisen & Alltag","Have a pleasant flight!"],
+          ["airport","der Flughafen","A2","Reisen & Alltag","Arrive at the airport early."],
+          ["hotel","das Hotel","A2","Reisen & Alltag","The hotel is near the beach."],
+          ["map","die Landkarte / Stadtplan","A2","Reisen & Alltag","Let us check the map."],
+          ["weather","das Wetter","A2","Reisen & Alltag","The weather looks sunny."],
+          ["rain","der Regen","A2","Reisen & Alltag","Take an umbrella for the rain."],
+          ["mountain","der Berg","A2","Reisen & Alltag","We climbed a high mountain."],
+          ["river","der Fluss","A2","Reisen & Alltag","The Danube is a long river."],
+          ["beach","der Strand","A2","Reisen & Alltag","Children played on the beach."],
+          ["hobby","das Hobby","A2","Reisen & Alltag","Drawing is my favorite hobby."],
+          ["music","die Musik","A2","Reisen & Alltag","I listen to music while studying."],
+          ["movie","der Film","A2","Reisen & Alltag","That movie was funny."],
+          ["weekend","das Wochenende","A2","Reisen & Alltag","What did you do last weekend?"],
+          ["to invite","einladen","A2","Reisen & Alltag","Invite your friends to dinner."],
+          ["to visit","besuchen","A2","Reisen & Alltag","We plan to visit Salzburg."],
+          ["to wait","warten","A2","Reisen & Alltag","Wait here for a minute."],
+          ["to arrive","ankommen","A2","Reisen & Alltag","The bus will arrive soon."],
+          ["cheap","billig / günstig","A2","Reisen & Alltag","These shoes were cheap."],
+          ["expensive","teuer","A2","Reisen & Alltag","Living downtown is expensive."],
+          ["subject","das Schulfach / Thema","A2","Reisen & Alltag","Biology is my favorite subject."],
+          ["homework","die Hausübung","A2","Reisen & Alltag","Finish your homework first."],
+          ["exam","die Prüfung / Schularbeit","A2","Reisen & Alltag","Study well for the exam."],
+          ["dictionary","das Wörterbuch","A2","Reisen & Alltag","Look up new words."],
+          ["job","der Job / Arbeit","A2","Beruf & Gesundheit","She got a new job."],
+          ["office","das Büro","A2","Beruf & Gesundheit","He works in a bright office."],
+          ["meeting","die Besprechung","A2","Beruf & Gesundheit","The meeting starts at nine."],
+          ["message","die Nachricht","A2","Beruf & Gesundheit","Did you get my message?"],
+          ["computer","der Computer","A2","Beruf & Gesundheit","Restart your computer now."],
+          ["problem","das Problem","A2","Beruf & Gesundheit","We solve this problem together."],
+          ["solution","die Lösung","A2","Beruf & Gesundheit","That is a clever solution."],
+          ["idea","die Idee","A2","Beruf & Gesundheit","Thanks for your idea."],
+          ["to explain","erklären","A2","Beruf & Gesundheit","Could you explain that again?"],
+          ["to understand","verstehen","A2","Beruf & Gesundheit","I understand everything clearly."],
+          ["to remember","sich erinnern","A2","Beruf & Gesundheit","Remember to bring your ruler."],
+          ["to forget","vergessen","A2","Beruf & Gesundheit","Do not forget your keys."],
+          ["to choose","wählen / aussuchen","A2","Beruf & Gesundheit","Choose the best answer."],
+          ["to decide","entscheiden","A2","Beruf & Gesundheit","We need to decide today."],
+          ["health","die Gesundheit","A2","Beruf & Gesundheit","Health is very important."],
+          ["medicine","das Medikament","A2","Beruf & Gesundheit","Take this medicine after dinner."],
+          ["hungry","hungrig","A2","Beruf & Gesundheit","I am hungry, let us eat."],
+          ["thirsty","durstig","A2","Beruf & Gesundheit","Drink water when thirsty."],
+          ["angry","wütend / verärgert","A2","Beruf & Gesundheit","Stay calm, do not get angry."],
+          ["surprised","überrascht","A2","Beruf & Gesundheit","I was surprised by the gift."],
+          ["excited","aufgeregt / begeistert","A2","Beruf & Gesundheit","We are excited about the trip."],
+          ["difficult","schwierig","A2","Beruf & Gesundheit","Some math tasks are difficult."],
+          ["important","wichtig","A2","Beruf & Gesundheit","Sleep is important for learning."],
+          ["together","zusammen","A2","Beruf & Gesundheit","Let us practice together."],
+          ["to borrow","ausborgen / leihen","A2","Beruf & Gesundheit","May I borrow your pen?"],
+
+          ["opinion","die Meinung","B1","Kommunikation & Umwelt","In my opinion, this works well."],
+          ["reason","der Grund","B1","Kommunikation & Umwelt","What was the reason?"],
+          ["argument","das Argument","B1","Kommunikation & Umwelt","She made a strong argument."],
+          ["advice","der Rat / Ratschlag","B1","Kommunikation & Umwelt","Can you give me advice?"],
+          ["to suggest","vorschlagen","B1","Kommunikation & Umwelt","I suggest taking a break."],
+          ["to agree","zustimmen","B1","Kommunikation & Umwelt","I completely agree with you."],
+          ["to disagree","widersprechen","B1","Kommunikation & Umwelt","Politely disagree when needed."],
+          ["to promise","versprechen","B1","Kommunikation & Umwelt","I promise to help tonight."],
+          ["to apologize","sich entschuldigen","B1","Kommunikation & Umwelt","He called to apologize."],
+          ["to complain","sich beschweren","B1","Kommunikation & Umwelt","Customers complained about noise."],
+          ["to describe","beschreiben","B1","Kommunikation & Umwelt","Describe the picture clearly."],
+          ["to compare","vergleichen","B1","Kommunikation & Umwelt","Compare both offers first."],
+          ["to discuss","diskutieren","B1","Kommunikation & Umwelt","Let us discuss the details."],
+          ["to support","unterstützen","B1","Kommunikation & Umwelt","Friends always support you."],
+          ["honest","ehrlich","B1","Kommunikation & Umwelt","Thank you for being honest."],
+          ["polite","höflich","B1","Kommunikation & Umwelt","Be polite to everyone."],
+          ["confident","selbstbewusst","B1","Kommunikation & Umwelt","Feel confident before tests."],
+          ["environment","die Umwelt","B1","Kommunikation & Umwelt","Protect our environment."],
+          ["pollution","die Umweltverschmutzung","B1","Kommunikation & Umwelt","Reduce plastic pollution."],
+          ["to recycle","recyceln","B1","Kommunikation & Umwelt","Recycle glass and paper."],
+          ["climate","das Klima","B1","Kommunikation & Umwelt","Global climate is changing."],
+          ["society","die Gesellschaft","B1","Kommunikation & Umwelt","Education strengthens society."],
+          ["government","die Regierung","B1","Kommunikation & Umwelt","The government passed a law."],
+          ["freedom","die Freiheit","B1","Kommunikation & Umwelt","Freedom of speech matters."],
+          ["to improve","verbessern","B1","Kommunikation & Umwelt","Practice improves memory."],
+          ["career","die Karriere","B1","Erfolg & Phrasals","She started a career in tech."],
+          ["experience","die Erfahrung","B1","Erfolg & Phrasals","He has five years experience."],
+          ["skill","die Fähigkeit","B1","Erfolg & Phrasals","Drawing is a useful skill."],
+          ["goal","das Ziel","B1","Erfolg & Phrasals","Set a clear study goal."],
+          ["effort","die Mühe / Anstrengung","B1","Erfolg & Phrasals","Success requires effort."],
+          ["success","der Erfolg","B1","Erfolg & Phrasals","Hard work brought success."],
+          ["failure","der Misserfolg","B1","Erfolg & Phrasals","Learn from every failure."],
+          ["challenge","die Herausforderung","B1","Erfolg & Phrasals","This exam is a challenge."],
+          ["opportunity","die Gelegenheit / Chance","B1","Erfolg & Phrasals","Take this great opportunity."],
+          ["responsible","verantwortlich","B1","Erfolg & Phrasals","Be responsible for your work."],
+          ["creative","kreativ","B1","Erfolg & Phrasals","Find a creative solution."],
+          ["flexible","flexibel","B1","Erfolg & Phrasals","Stay flexible with plans."],
+          ["to achieve","erreichen / erzielen","B1","Erfolg & Phrasals","Achieve your target score."],
+          ["to prepare","vorbereiten","B1","Erfolg & Phrasals","Prepare well for the quiz."],
+          ["to apply","sich bewerben / anwenden","B1","Erfolg & Phrasals","Apply the formula here."],
+          ["to earn","verdienen","B1","Erfolg & Phrasals","Earn extra points today."],
+          ["to give up","aufgeben","B1","Erfolg & Phrasals","Never give up too early."],
+          ["to find out","herausfinden","B1","Erfolg & Phrasals","Find out the correct rule."],
+          ["to look forward to","sich freuen auf","B1","Erfolg & Phrasals","I look forward to Friday."],
+          ["advantage","der Vorteil","B1","Erfolg & Phrasals","Name one advantage of solar."],
+          ["disadvantage","der Nachteil","B1","Erfolg & Phrasals","Discuss any disadvantage."],
+          ["equipment","die Ausrüstung","B1","Erfolg & Phrasals","Bring compass equipment."],
+          ["distance","die Entfernung","B1","Erfolg & Phrasals","Measure the exact distance."],
+          ["independent","unabhängig","B1","Erfolg & Phrasals","Become an independent thinker."],
+          ["necessary","notwendig","B1","Erfolg & Phrasals","Water is necessary for life."],
+
+          ["economy","die Wirtschaft","B2","Wirtschaft & Wissenschaft","Tourism boosts the economy."],
+          ["profit","der Gewinn","B2","Wirtschaft & Wissenschaft","Revenue minus costs equals profit."],
+          ["budget","das Budget","B2","Wirtschaft & Wissenschaft","Stick to the monthly budget."],
+          ["investment","die Investition","B2","Wirtschaft & Wissenschaft","Education is a wise investment."],
+          ["demand","die Nachfrage","B2","Wirtschaft & Wissenschaft","Demand for EVs is rising."],
+          ["supply","das Angebot / Versorgung","B2","Wirtschaft & Wissenschaft","Check supply and demand."],
+          ["strategy","die Strategie","B2","Wirtschaft & Wissenschaft","Use a smart strategy."],
+          ["to analyze","analysieren","B2","Wirtschaft & Wissenschaft","Analyze the chart carefully."],
+          ["to evaluate","bewerten / auswerten","B2","Wirtschaft & Wissenschaft","Evaluate the lab results."],
+          ["to estimate","schätzen","B2","Wirtschaft & Wissenschaft","Estimate the angle first."],
+          ["to negotiate","verhandeln","B2","Wirtschaft & Wissenschaft","Both sides negotiate fairly."],
+          ["to persuade","überzeugen","B2","Wirtschaft & Wissenschaft","Facts persuade readers."],
+          ["to influence","beeinflussen","B2","Wirtschaft & Wissenschaft","Media can influence opinions."],
+          ["impact","die Auswirkung","B2","Wirtschaft & Wissenschaft","Trees have a cooling impact."],
+          ["consequence","die Konsequenz / Folge","B2","Wirtschaft & Wissenschaft","Every choice has a consequence."],
+          ["research","die Forschung","B2","Wirtschaft & Wissenschaft","Medical research saves lives."],
+          ["evidence","der Beweis / Evidenz","B2","Wirtschaft & Wissenschaft","Show clear evidence."],
+          ["data","die Daten","B2","Wirtschaft & Wissenschaft","Always back up your data."],
+          ["theory","die Theorie","B2","Wirtschaft & Wissenschaft","Test the theory in practice."],
+          ["discovery","die Entdeckung","B2","Wirtschaft & Wissenschaft","Penicillin was a discovery."],
+          ["innovation","die Innovation","B2","Wirtschaft & Wissenschaft","Innovation drives progress."],
+          ["privacy","die Privatsphäre","B2","Wirtschaft & Wissenschaft","Protect your online privacy."],
+          ["source","die Quelle","B2","Wirtschaft & Wissenschaft","Check the news source."],
+          ["reliable","zuverlässig","B2","Wirtschaft & Wissenschaft","Use reliable references."],
+          ["accurate","genau / präzise","B2","Wirtschaft & Wissenschaft","Make accurate drawings."],
+          ["biased","voreingenommen","B2","Konzepte & Technik","Avoid biased reporting."],
+          ["artificial","künstlich","B2","Konzepte & Technik","Artificial intelligence helps."],
+          ["efficient","effizient","B2","Konzepte & Technik","LED bulbs are efficient."],
+          ["to investigate","untersuchen","B2","Konzepte & Technik","Investigate the habitat."],
+          ["to prove","beweisen","B2","Konzepte & Technik","Prove the math theorem."],
+          ["to assume","annehmen / vermuten","B2","Konzepte & Technik","Do not assume without data."],
+          ["to conclude","schlussfolgern","B2","Konzepte & Technik","Conclude from the graph."],
+          ["attitude","die Einstellung","B2","Konzepte & Technik","Keep a curious attitude."],
+          ["perspective","die Perspektive","B2","Konzepte & Technik","Draw in 3D perspective."],
+          ["priority","die Priorität","B2","Konzepte & Technik","Health is top priority."],
+          ["compromise","der Kompromiss","B2","Konzepte & Technik","Teamwork needs compromise."],
+          ["prejudice","das Vorurteil","B2","Konzepte & Technik","Facts overcome prejudice."],
+          ["curiosity","die Neugier","B2","Konzepte & Technik","Curiosity sparks discovery."],
+          ["gratitude","die Dankbarkeit","B2","Konzepte & Technik","Show gratitude to mentors."],
+          ["essential","wesentlich / unerlässlich","B2","Konzepte & Technik","Oxygen is essential for cells."],
+          ["obvious","offensichtlich","B2","Konzepte & Technik","The pattern is obvious."],
+          ["temporary","vorübergehend","B2","Konzepte & Technik","This is a temporary fix."],
+          ["permanent","dauerhaft","B2","Konzepte & Technik","Build permanent habits."],
+          ["to overcome","überwinden","B2","Konzepte & Technik","Overcome exam anxiety."],
+          ["to avoid","vermeiden","B2","Konzepte & Technik","Avoid rounding too early."],
+          ["significant","bedeutend / erheblich","B2","Konzepte & Technik","A significant improvement."],
+          ["equation","die Gleichung","B2","Konzepte & Technik","Solve the equation for x."],
+          ["fraction","der Bruch (Mathe)","B2","Konzepte & Technik","Simplify the fraction 2/4."],
+          ["probability","die Wahrscheinlichkeit","B2","Konzepte & Technik","Compute the probability."],
+          ["renewable","erneuerbar","B2","Konzepte & Technik","Wind is renewable energy."],
+
+          ["hypothesis","die Hypothese","C1","Akademik & Psychologie","Test your hypothesis."],
+          ["phenomenon","das Phänomen","C1","Akademik & Psychologie","Gravity is a phenomenon."],
+          ["criterion","das Kriterium","C1","Akademik & Psychologie","Clarity is a criterion."],
+          ["framework","der Rahmen / Konzept","C1","Akademik & Psychologie","Use a clear framework."],
+          ["paradigm","das Paradigma","C1","Akademik & Psychologie","A scientific paradigm shift."],
+          ["implication","die Auswirkung / Folgerung","C1","Akademik & Psychologie","Consider ethical implications."],
+          ["contradiction","der Widerspruch","C1","Akademik & Psychologie","Spot the contradiction."],
+          ["ambiguity","die Mehrdeutigkeit","C1","Akademik & Psychologie","Avoid ambiguity in rules."],
+          ["consensus","der Konsens / Einigkeit","C1","Akademik & Psychologie","Scientists reached consensus."],
+          ["nuance","die Nuance / Feinheit","C1","Akademik & Psychologie","Capture subtle nuances."],
+          ["to substantiate","untermauern / belegen","C1","Akademik & Psychologie","Substantiate with facts."],
+          ["to refute","widerlegen","C1","Akademik & Psychologie","New data refuted it."],
+          ["to synthesize","zusammenführen","C1","Akademik & Psychologie","Synthesize two texts."],
+          ["to scrutinize","genau prüfen","C1","Akademik & Psychologie","Scrutinize every step."],
+          ["to elaborate","näher ausführen","C1","Akademik & Psychologie","Elaborate on your point."],
+          ["arbitrary","willkürlich","C1","Akademik & Psychologie","Avoid arbitrary numbers."],
+          ["coherent","schlüssig","C1","Akademik & Psychologie","Write a coherent essay."],
+          ["implicit","implizit / unausgesprochen","C1","Akademik & Psychologie","An implicit assumption."],
+          ["explicit","ausdrücklich / explizit","C1","Akademik & Psychologie","Give explicit rules."],
+          ["prevalent","vorherrschend","C1","Akademik & Psychologie","Solar power is prevalent."],
+          ["resilience","die Widerstandskraft","C1","Akademik & Psychologie","Build mental resilience."],
+          ["empathy","die Empathie","C1","Akademik & Psychologie","Empathy aids cooperation."],
+          ["intuition","die Intuition","C1","Akademik & Psychologie","Verify intuition with math."],
+          ["perception","die Wahrnehmung","C1","Akademik & Psychologie","Light shapes perception."],
+          ["procrastination","das Aufschieben","C1","Akademik & Psychologie","Stop procrastination today."],
+          ["integrity","die Integrität","C1","Politik & Präzision","Act with integrity."],
+          ["to deter","abschrecken","C1","Politik & Präzision","Fines deter speeding."],
+          ["to foster","fördern / begünstigen","C1","Politik & Präzision","Foster curiosity in class."],
+          ["to undermine","untergraben","C1","Politik & Präzision","Rumors undermine trust."],
+          ["susceptible","anfällig / empfänglich","C1","Politik & Präzision","Cells susceptible to light."],
+          ["reluctant","zögerlich / widerwillig","C1","Politik & Präzision","He was reluctant to agree."],
+          ["diligent","fleißig / gewissenhaft","C1","Politik & Präzision","Diligent study pays off."],
+          ["pragmatic","pragmatisch","C1","Politik & Präzision","Take a pragmatic path."],
+          ["legislation","die Gesetzgebung","C1","Politik & Präzision","New privacy legislation."],
+          ["sovereignty","die Souveränität","C1","Politik & Präzision","Respect state sovereignty."],
+          ["diplomacy","die Diplomatie","C1","Politik & Präzision","Diplomacy avoids war."],
+          ["transparency","die Transparenz","C1","Politik & Präzision","Budgets need transparency."],
+          ["accountability","die Rechenschaftspflicht","C1","Politik & Präzision","Leaders owe accountability."],
+          ["to advocate","befürworten","C1","Politik & Präzision","Advocate clean transit."],
+          ["to implement","umsetzen","C1","Politik & Präzision","Implement the solution."],
+          ["to alleviate","lindern / mildern","C1","Politik & Präzision","Medicine alleviates pain."],
+          ["to exacerbate","verschlimmern","C1","Politik & Präzision","Droughts exacerbate hunger."],
+          ["stringent","streng / strikt","C1","Politik & Präzision","Stringent safety rules."],
+          ["viable","realisierbar / tragfähig","C1","Politik & Präzision","An economically viable plan."],
+          ["unprecedented","beispiellos","C1","Politik & Präzision","Unprecedented solar growth."],
+          ["sustainable","nachhaltig","C1","Politik & Präzision","Use sustainable materials."],
+          ["inevitable","unvermeidlich","C1","Politik & Präzision","Change is inevitable."],
+          ["obsolete","veraltet / überholt","C1","Politik & Präzision","Old floppy disks are obsolete."],
+          ["correlation","der Zusammenhang","C1","Politik & Präzision","Correlation is not causation."],
+          ["equilibrium","das Gleichgewicht","C1","Politik & Präzision","Forces in equilibrium."],
+
+          ["eloquence","die Sprachgewandtheit","C2","Rhetorik & Literatur","Her eloquence inspired us."],
+          ["brevity","die Kürze / Prägnanz","C2","Rhetorik & Literatur","Brevity is the soul of wit."],
+          ["paradox","das Paradoxon","C2","Rhetorik & Literatur","A fascinating paradox."],
+          ["irony","die Ironie","C2","Rhetorik & Literatur","Spot the irony in the scene."],
+          ["metaphor","die Metapher","C2","Rhetorik & Literatur","Time is a river."],
+          ["euphemism","die Beschönigung","C2","Rhetorik & Literatur","Downsizing is a euphemism."],
+          ["dichotomy","die Zweiteilung","C2","Rhetorik & Literatur","Avoid a false dichotomy."],
+          ["juxtaposition","die Gegenüberstellung","C2","Rhetorik & Literatur","Juxtaposition of contrasts."],
+          ["premise","die Grundannahme","C2","Rhetorik & Literatur","Check the logical premise."],
+          ["to articulate","klar formulieren","C2","Rhetorik & Literatur","Articulate your idea."],
+          ["to elucidate","erläutern / aufklären","C2","Rhetorik & Literatur","Diagrams elucidate geometry."],
+          ["to extrapolate","extrapolieren","C2","Rhetorik & Literatur","Extrapolate cautiously."],
+          ["to equivocate","ausweichend reden","C2","Rhetorik & Literatur","Do not equivocate."],
+          ["to epitomize","verkörpern","C2","Rhetorik & Literatur","It epitomizes elegance."],
+          ["succinct","prägnant / knapp","C2","Rhetorik & Literatur","Write a succinct summary."],
+          ["verbose","weitschweifig","C2","Rhetorik & Literatur","Cut verbose phrases."],
+          ["poignant","ergreifend","C2","Rhetorik & Literatur","A poignant poem."],
+          ["lucid","klar / verständlich","C2","Rhetorik & Literatur","A lucid explanation."],
+          ["astute","scharfsinnig","C2","Rhetorik & Literatur","An astute observer."],
+          ["serendipity","der glückliche Zufall","C2","Rhetorik & Literatur","Discovery by serendipity."],
+          ["melancholy","die Schwermut","C2","Rhetorik & Literatur","Gentle autumn melancholy."],
+          ["nostalgia","die Sehnsucht / Nostalgie","C2","Rhetorik & Literatur","Old songs bring nostalgia."],
+          ["apathy","die Gleichgültigkeit","C2","Rhetorik & Literatur","Combat voter apathy."],
+          ["hubris","die Selbstüberschätzung","C2","Rhetorik & Literatur","Tragedy warns of hubris."],
+          ["enigma","das Rätsel / Mysterium","C2","Rhetorik & Literatur","Prime numbers remain an enigma."],
+          ["plethora","die Überfülle","C2","Präzision & Akademik","A plethora of learning tools."],
+          ["dearth","der Mangel / Knappheit","C2","Präzision & Akademik","A dearth of clean water."],
+          ["epiphany","die plötzliche Erkenntnis","C2","Präzision & Akademik","A mathematical epiphany."],
+          ["to ameliorate","verbessern / lindern","C2","Präzision & Akademik","Ameliorate living standards."],
+          ["to mitigate","abmildern / entschärfen","C2","Präzision & Akademik","Mitigate climate risks."],
+          ["to reconcile","in Einklang bringen","C2","Präzision & Akademik","Reconcile two theories."],
+          ["to discern","erkennen / unterscheiden","C2","Präzision & Akademik","Discern fact from rumor."],
+          ["to disdain","verachten","C2","Präzision & Akademik","Disdain sloppy work."],
+          ["ephemeral","vergänglich / flüchtig","C2","Präzision & Akademik","Ephemeral cherry blossoms."],
+          ["ubiquitous","allgegenwärtig","C2","Präzision & Akademik","Sensors are ubiquitous."],
+          ["meticulous","akribisch / penibel","C2","Präzision & Akademik","Meticulous GZ drawing."],
+          ["capricious","launisch / unberechenbar","C2","Präzision & Akademik","Capricious mountain weather."],
+          ["fastidious","übergenau","C2","Präzision & Akademik","Fastidious about units."],
+          ["to corroborate","bestätigen / erhärten","C2","Präzision & Akademik","Data corroborates theory."],
+          ["to disseminate","verbreiten","C2","Präzision & Akademik","Disseminate research openly."],
+          ["to proliferate","sich rasant vermehren","C2","Präzision & Akademik","Apps proliferate fast."],
+          ["to oscillate","schwanken / pendeln","C2","Präzision & Akademik","Pendulums oscillate."],
+          ["to circumvent","umgehen / aushebeln","C2","Präzision & Akademik","Never circumvent safety."],
+          ["to rectify","berichtigen / beheben","C2","Präzision & Akademik","Rectify mistakes quickly."],
+          ["to transcend","übersteigen","C2","Präzision & Akademik","Art transcends borders."],
+          ["quintessential","typisch / mustergültig","C2","Präzision & Akademik","Quintessential Vienna."],
+          ["innocuous","harmlos","C2","Präzision & Akademik","An innocuous comment."],
+          ["pernicious","verderblich / heimtückisch","C2","Präzision & Akademik","Pernicious misinformation."],
+          ["clandestine","heimlich / geheim","C2","Präzision & Akademik","Clandestine meetings."],
+          ["indomitable","unbezwingbar","C2","Präzision & Akademik","Indomitable curiosity."]
+        ],
+
+        math: [
+          ["Summand + Summand = ?","Summe (Addition)","L1","Grundlagen","7 + 5 = 12"],
+          ["Minuend − Subtrahend = ?","Differenz (Subtraktion)","L1","Grundlagen","15 − 6 = 9"],
+          ["Faktor · Faktor = ?","Produkt (Multiplikation)","L1","Grundlagen","4 · 8 = 32"],
+          ["Dividend : Divisor = ?","Quotient (Division)","L1","Grundlagen","Durch 0 teilen ist verboten!"],
+          ["Vorrangregel (Klammer, Punkt, Strich)","Klammer vor Punkt (· :) vor Strich (+ −)","L1","Grundlagen","2 + 3 · 4 = 14"],
+          ["Umfang & Fläche Quadrat (a)","u = 4 · a | A = a²","L1","Grundlagen","Bei a = 5 cm: u = 20 cm, A = 25 cm²."],
+          ["Umfang & Fläche Rechteck (a, b)","u = 2 · (a + b) | A = a · b","L1","Grundlagen","Bei a = 4, b = 3: u = 14, A = 12."],
+          ["1 m in cm / 1 km in m","100 cm / 1.000 m","L1","Grundlagen","1 kg = 1.000 g | 1 t = 1.000 kg."],
+          ["Vorzeichenregeln (· und :)","(−) · (−) = (+) | (+) · (−) = (−)","L2","Mittelstufe","(−3) · (−4) = +12"],
+          ["Prozentwert W berechnen","W = (G · p) / 100","L2","Mittelstufe","20 % von 150 = 30."],
+          ["Satz des Pythagoras","a² + b² = c² (nur rechtwinkelig!)","L2","Mittelstufe","Katheten a, b; Hypotenuse c."],
+          ["Fläche Dreieck & Winkelsumme","A = (g · h) / 2 | Winkelsumme = 180°","L2","Mittelstufe","Viereck-Winkelsumme = 360°."],
+          ["Kreis Umfang & Fläche (r)","u = 2 · r · π | A = r² · π","L2","Mittelstufe","π ≈ 3,14159"],
+          ["Volumen Quader & Zylinder","Quader: a · b · h | Zylinder: r² · π · h","L2","Mittelstufe","Grundfläche mal Höhe."],
+          ["1. & 2. Binomische Formel","(a ± b)² = a² ± 2ab + b²","L2","Mittelstufe","(x + 3)² = x² + 6x + 9"],
+          ["3. Binomische Formel","(a + b)(a − b) = a² − b²","L2","Mittelstufe","(x + 5)(x − 5) = x² − 25"],
+          ["Lineare Funktion Grundform","f(x) = k · x + d","L3","Aufbau","k = Steigung, d = y-Achsenabschnitt."],
+          ["Steigung k aus 2 Punkten","k = (y₂ − y₁) / (x₂ − x₁)","L3","Aufbau","Differenzenquotient Δy / Δx."],
+          ["Quadratische Lösungsformel (x²+px+q=0)","x₁,₂ = −p/2 ± √((p/2)² − q)","L3","Aufbau","Kleine Lösungsformel."],
+          ["Potenzgesetze (gleiche Basis)","aᵐ · aⁿ = a^(m+n) | aᵐ / aⁿ = a^(m−n)","L3","Aufbau","a⁰ = 1 | a⁻ⁿ = 1/aⁿ."],
+          ["Sinus, Kosinus, Tangens","sin = Gegen/Hyp | cos = An/Hyp | tan = Gegen/An","L3","Aufbau","tan(α) = sin(α) / cos(α)."],
+          ["Volumen Pyramide, Kegel, Kugel","Pyr/Kegel: (G·h)/3 | Kugel: (4/3)·π·r³","L3","Aufbau","Kugeloberfläche: 4·π·r²."],
+          ["Zinseszinsformel","Kₙ = K₀ · (1 + p/100)ⁿ","L3","Aufbau","Exponentielles Wachstum."],
+          ["Laplace-Wahrscheinlichkeit","günstige Fälle / alle möglichen Fälle","L3","Aufbau","Würfel gerade Zahl: 3/6 = 50 %."],
+          ["Logarithmus: logₐ(b) = x","aˣ = b","L4","Profi / Matura","log₂(32) = 5, weil 2⁵ = 32."],
+          ["Ableitungsregeln (xⁿ, eˣ, sin x, ln x)","n·xⁿ⁻¹, eˣ, cos(x), 1/x","L4","Profi / Matura","Ableitung von cos(x) = −sin(x)."],
+          ["Extrem- & Wendestelle","Extrem: f'(x) = 0 | Wende: f''(x) = 0","L4","Profi / Matura","f''(x) < 0 ⇒ Maximum."],
+          ["Integral ∫ xⁿ dx (n ≠ −1)","xⁿ⁺¹ / (n + 1) + C","L4","Profi / Matura","∫ₐᵇ f(x)dx = F(b) − F(a)."],
+          ["Betrag eines Vektors (x, y)","|v| = √(x² + y²)","L4","Profi / Matura","Im 3D-Raum + z²."],
+          ["Skalarprodukt & 90°-Kriterium","a · b = a₁b₁ + a₂b₂ (+ a₃b₃) = 0 bei 90°","L4","Profi / Matura","Orthogonalität."],
+          ["Binomialverteilung (μ und σ)","μ = n · p | σ = √(n · p · (1 − p))","L4","Profi / Matura","Erwartungswert & Standardabweichung."],
+          ["Zahlenmengen-Hierarchie","ℕ ⊂ ℤ ⊂ ℚ ⊂ ℝ ⊂ ℂ","L4","Profi / Matura","e ≈ 2,71828."]
+        ],
+
+        de: [
+          ["Nomen, Verb, Adjektiv","Nomen = groß | Verb = Tunwort | Adjektiv = Wiewort","L1","Einstieg","Der schnelle Hund läuft."],
+          ["1. Fall (Nominativ)","Wer oder was?","L1","Einstieg","Der Schüler lernt."],
+          ["2. Fall (Genitiv)","Wessen?","L1","Einstieg","Das Heft des Schülers."],
+          ["3. Fall (Dativ)","Wem?","L1","Einstieg","Ich helfe der Freundin."],
+          ["4. Fall (Akkusativ)","Wen oder was?","L1","Einstieg","Er liest ein Buch."],
+          ["Die 4 Haupt-Zeitformen","Präsens, Präteritum, Perfekt, Futur I","L1","Einstieg","Ich lerne / lernte / habe gelernt / werde lernen."],
+          ["Subjekt & Prädikat","Subjekt = Wer/Was? | Prädikat = Satzaussage (Verb)","L1","Einstieg","Finites Verb im Aussagesatz an 2. Stelle."],
+          ["Silbentrennung: ch, sch, st","ch & sch bleiben zusammen; st darf getrennt werden","L1","Einstieg","Bü-cher, wa-schen, Kas-ten."],
+          ["„das“ vs. „dass“","„das“ = Artikel/Pronomen (dieses); „dass“ = Konjunktion","L2","Mittelstufe","Das Buch, das zeigt, dass Üben hilft."],
+          ["„seid“ vs. „seit“","„seid“ = Verb (ihr seid); „seit“ = Zeitangabe","L2","Mittelstufe","Seid ihr seit zwei Uhr hier?"],
+          ["Regel für s, ss und ß","Nach kurzem Vokal: ss | Nach langem Vokal / ei, au: ß","L2","Mittelstufe","Fluss (kurz), Fuß (lang), heiß."],
+          ["Substantivierung (Großschreibung)","Nach Artikel, Präposition, „etwas/nichts“ groß","L2","Mittelstufe","das Lesen, beim Laufen, etwas Neues."],
+          ["Aktiv vs. Passiv","Aktiv: Subjekt handelt | Passiv: werden + Partizip II","L2","Mittelstufe","Sie baut das Haus. / Das Haus wird gebaut."],
+          ["Plusquamperfekt","hatte / war + Partizip II","L2","Mittelstufe","Nachdem er gegessen hatte, ging er."],
+          ["Nebensatz-Kommaregel","Nebensätze (Verb am Ende) durch Komma abtrennen","L2","Mittelstufe","Wenn es regnet, bleiben wir drinnen."],
+          ["Steigerung des Adjektivs","Positiv – Komparativ – Superlativ","L2","Mittelstufe","gut – besser – am besten."],
+          ["Konjunktiv I vs. II","I = indirekte Rede | II = Irrealis, Wünsche","L3","Aufbau","Sie sagte, sie habe Zeit. / Wenn ich Zeit hätte..."],
+          ["Metapher vs. Vergleich","Metapher = ohne „wie“ | Vergleich = mit „wie/als“","L3","Aufbau","Zeit ist Geld | stark wie ein Löwe."],
+          ["Personifikation","Menschliche Eigenschaften für Dinge oder Natur","L3","Aufbau","Die Sonne lacht."],
+          ["Alliteration & Anapher","Alliteration: gleicher Anlaut | Anapher: gleiches Satzanfangswort","L3","Aufbau","Ich kam, ich sah, ich siegte."],
+          ["Hyperbel & Ironie","Hyperbel = Übertreibung | Ironie = Gegenteil gemeint","L3","Aufbau","Tausendmal gesagt!"],
+          ["3 literarische Hauptgattungen","Epik (erzählend), Lyrik (Gedichte), Dramatik (Theater)","L3","Aufbau","Roman = Epik, Sonett = Lyrik."],
+          ["Erörterung (Aufbau)","Einleitung – Hauptteil (Pro/Contra) – Schluss (Fazit)","L3","Aufbau","Argument + Begründung + Beispiel."],
+          ["Inhaltsangabe (Zeitform)","Präsens, sachlich, ohne wörtliche Rede","L3","Aufbau","Kurz zusammenfassen."],
+          ["Aufklärung vs. Sturm und Drang","Aufklärung: Vernunft | Sturm & Drang: Gefühl & Rebellion","L4","Profi / Matura","Lessing vs. junger Goethe."],
+          ["Weimarer Klassik vs. Romantik","Klassik: Harmonie | Romantik: Sehnsucht & Fantasie","L4","Profi / Matura","Goethe/Schiller vs. Novalis."],
+          ["Realismus, Naturalismus, Expressionismus","Realismus/Nat.: Alltag | Expr.: Großstadtangst & Ich-Zerfall","L4","Profi / Matura","Trakl, Fontane, Hauptmann."],
+          ["Parataxe vs. Hypotaxe","Parataxe: kurze Hauptsätze | Hypotaxe: Schachtelsätze","L4","Profi / Matura","Steuert Lesefluss."],
+          ["Erzählperspektiven (Stanzel)","Auktorial, Personal, Ich-Erzähler","L4","Profi / Matura","Plus neutrales Erzählen."],
+          ["Innerer Monolog vs. Erlebte Rede","Monolog: 1. Pers. Präsens | Erlebte Rede: 3. Pers. Präteritum","L4","Profi / Matura","„Was sollte sie tun?“"],
+          ["Metrum & Reimschemata","Jambus (xX), Trochäus (Xx) | aabb, abab, abba","L4","Profi / Matura","Lyrikanalyse."],
+          ["Oxymoron & Chiasmus","Oxymoron: Widerspruch | Chiasmus: Überkreuzstellung","L4","Profi / Matura","Bittersüß."]
+        ],
+
+        gz: [
+          ["Breite Volllinie (ÖNORM)","Sichtbare Kanten und Umrisse","L1","Einstieg","Kräftig durchgezogen.","line_full"],
+          ["Schmale Strichlinie","Verdeckte (unsichtbare) Kanten","L1","Einstieg","Kurze gleichmäßige Striche.","line_dash"],
+          ["Schmale Strichpunktlinie","Symmetrie- und Mittellinien","L1","Einstieg","Langer Strich + Punkt abwechselnd.","line_dashdot"],
+          ["Spitzer Winkel (α)","0° < α < 90°","L1","Einstieg","Kleiner als 90°.","acute"],
+          ["Rechter & Stumpfer Winkel","Recht = 90° | Stumpf = 90° < α < 180°","L1","Einstieg","90° mit Punkt im Bogen.","right"],
+          ["Gestreckter & Erhabener Winkel","Gestreckt = 180° | Erhaben = 180°–360°","L1","Einstieg","Vollwinkel = 360°.","straight"],
+          ["Parallele & Normale Geraden","Parallel (g ∥ h) | Normal (g ⊥ h, 90°)","L1","Einstieg","Mit Geodreieck konstruierbar.","parallel"],
+          ["Radius r vs. Durchmesser d","d = 2 · r","L1","Einstieg","Radius von M bis Kreislinie.","circle_parts"],
+          ["Streckensymmetrale","Halbiert Strecke und steht im 90°-Winkel darauf","L2","Mittelstufe","Ergibt Umkreismittelpunkt.","symmetry"],
+          ["Winkelsymmetrale","Halbiert einen Winkel genau","L2","Mittelstufe","Ergibt Inkreismittelpunkt."],
+          ["Tangente an einen Kreis","Berührt in 1 Punkt; steht normal auf Radius","L2","Mittelstufe","Konstruktion mit Satz des Thales.","circle_parts"],
+          ["Maßstab 1 : 50 vs. 5 : 1","1:50 = 50× kleiner | 5:1 = 5× größer","L2","Mittelstufe","Plan = Wirklichkeit / Zahl."],
+          ["Grundriss (von oben)","Projektion auf waagrechte Ebene (Länge × Breite)","L2","Mittelstufe","Liegt unter dem Aufriss.","projections"],
+          ["Aufriss (von vorne)","Projektion auf Hauptebene (Länge × Höhe)","L2","Mittelstufe","Hauptansicht.","projections"],
+          ["Kreuzriss (Seitenansicht)","Ansicht von links/rechts (Tiefe × Höhe)","L2","Mittelstufe","Neben dem Aufriss.","projections"],
+          ["Schrägriss / Kavalierperspektive","Tiefenachse unter α = 45° mit Verkürzung q = 0,5","L2","Mittelstufe","Frontalfläche unverzerrt.","oblique"],
+          ["Prismen vs. Pyramiden","Prisma: 2 parallele Grundflächen | Pyramide: Spitze S","L3","Aufbau","Gerader Prismamantel = Rechtecke."],
+          ["Drehzylinder & Drehkegel","Zylindermantel = Rechteck | Kegelmantel = Kreissektor","L3","Aufbau","Rotationskörper."],
+          ["Platonische Körper (5 Stück)","Tetraeder(4), Würfel(6), Oktaeder(8), Dodekaeder(12), Ikosaeder(20)","L3","Aufbau","Kongruente regelmäßige Flächen."],
+          ["Isometrische Axonometrie","x- & y-Achse unter 30°; Verkürzung 1 : 1 : 1","L3","Aufbau","120°-Winkel zwischen Raumachsen."],
+          ["Dimetrische Axonometrie","Winkel 7° und 42°; Verkürzung 1 : 0,5 : 1","L3","Aufbau","Technischer Standard."],
+          ["Höhenquote (Kotierte Projektion)","Zahl neben Punkt gibt Höhe z an","L3","Aufbau","Straßen- und Geländebau."],
+          ["Ellipse (Brennpunkte)","Abstandssumme zu F₁, F₂ = 2a","L3","Aufbau","Schrägschnitt eines Zylinders."],
+          ["Bemaßung & Schraffur (ÖNORM)","Maßzahlen in mm; Schnittflächen 45° schraffiert","L3","Aufbau","Schmale Volllinien."],
+          ["Zentralprojektion (Perspektive)","Sehstrahlen laufen vom Augpunkt zur Bildebene","L4","Profi / Matura","Fluchtpunkt F."],
+          ["Horizontlinie h","Waagrechte Ebene in Augenhöhe","L4","Profi / Matura","Fluchtpunkte waagrechter Geraden."],
+          ["Die 4 Kegelschnitte","Kreis, Ellipse, Parabel, Hyperbel","L4","Profi / Matura","Schnittebene durch Drehkegel."],
+          ["Schattenkonstruktion","Parallellicht → Durchstoßpunkt mit Ebene","L4","Profi / Matura","Eigen- & Schlagschatten."],
+          ["Kugelschnittverfahren","Konzentrische Kugeln schneiden beide Drehkörper in Kreisen","L4","Profi / Matura","Durchdringungskurven."],
+          ["Schraublinie (Helix)","Kreisbewegung + Bewegung entlang Achse","L4","Profi / Matura","Gewinde & Wendeltreppe."],
+          ["Abwickelbare Flächen","Zylinder, Kegel (ja) | Kugel, Torus (nein)","L4","Profi / Matura","Torsionsfreie Flächen."],
+          ["Dachausmittlung","First = oben | Grat = außen | Kehle = innen","L4","Profi / Matura","Winkelsymmetralen der Traufen."]
+        ],
+
+        geo: [
+          ["Die 7 Kontinente & größte Ozeane","Asien, Afrika, Nord-/Südamerika, Antarktika, Europa, Australien | Pazifik","L1","Einstieg","Asien ist größter Kontinent."],
+          ["Äquator (0°) & Nullmeridian (0°)","Äquator teilt Nord/Süd | Nullmeridian Ost/West","L1","Einstieg","Äquator ca. 40.075 km."],
+          ["Österreich: Bundesländer","9 Bundesländer (Wien = Land & Hauptstadt)","L1","Einstieg","Republik in Mitteleuropa."],
+          ["Hauptstädte: NÖ, OÖ, Stmk","St. Pölten, Linz, Graz","L1","Einstieg","Graz = zweitgrößte Stadt."],
+          ["Hauptstädte: Ktn, Tirol, Vbg, Bgld","Klagenfurt, Innsbruck, Bregenz, Eisenstadt","L1","Einstieg","Bregenz am Bodensee."],
+          ["Höchster Berg Österreichs","Großglockner (3.798 m)","L1","Einstieg","Hohe Tauern."],
+          ["Längster Fluss durch Österreich","Donau","L1","Einstieg","Fließt bis ans Schwarze Meer."],
+          ["4 Himmelsrichtungen","Norden, Osten, Süden, Westen","L1","Einstieg","Nie Ohne Seife Waschen."],
+          ["8 Nachbarländer Österreichs","D, CZ, SK, HU, SI, IT, CH, LI","L2","Mittelstufe","Binnenstaat."],
+          ["Hauptstädte: D, F, I, E","Berlin, Paris, Rom, Madrid","L2","Mittelstufe","Westeuropa / Südeuropa."],
+          ["Hauptstädte: CH, UK, PL, GR","Bern, London, Warschau, Athen","L2","Mittelstufe","Bern ist Bundesstadt."],
+          ["5 Großlandschaften Österreichs","Alpen, Alpenvorland, Granithochland, Vorland Ost, Wiener Becken","L2","Mittelstufe","Über 60 % Alpen."],
+          ["Höchster Berg Alpen & Europa","Mont Blanc (4.805 m) / Elbrus (5.642 m)","L2","Mittelstufe","Längster Fluss Europas: Wolga."],
+          ["Größter & tiefster See Österreichs","Neusiedler See / Traunsee (191 m)","L2","Mittelstufe","Bodensee = Dreiländereck."],
+          ["Wetter vs. Klima","Wetter = kurzfristig | Klima = Schnitt über min. 30 Jahre","L2","Mittelstufe","4 Einflüsse in Österreich."],
+          ["Pannonisches Klima","Heiße Sommer, trockene kalte Winter (Osten)","L2","Mittelstufe","Weinbau im Burgenland/NÖ."],
+          ["4 Klimazonen der Erde","Tropen, Subtropen, Gemäßigte Zone, Polarzone","L3","Aufbau","Durch Neigung der Erdachse."],
+          ["Plattentektonik","Konvergenz = Gebirge | Divergenz = Vulkane/Rücken","L3","Aufbau","Exogene Kräfte = Erosion."],
+          ["Bevölkerungspyramiden","Dreieck = jung/wachsend | Urne = alternd","L3","Aufbau","Entwicklungs- vs. Industrieländer."],
+          ["3 Wirtschaftssektoren","Primär (Landw.), Sekundär (Industrie), Tertiär (Dienstleistung)","L3","Aufbau","Österreich >70 % tertiär."],
+          ["BIP vs. HDI","BIP = Wirtschaftsleistung | HDI = Gesundheit + Bildung + Einkommen","L3","Aufbau","HDI 0 bis 1."],
+          ["Hauptstädte: Australien, Kanada, Brasilien","Canberra, Ottawa, Brasília","L3","Aufbau","Nicht Sydney/Toronto/Rio!"],
+          ["Längster Fluss & Höchster Berg Welt","Nil (~6.650 km) / Mount Everest (8.848 m)","L3","Aufbau","Marianengraben ~11 km."],
+          ["Megacity","Stadtregion mit über 10 Millionen Einwohnern","L3","Aufbau","Tokio, Delhi, Shanghai."],
+          ["Treibhauseffekt & Albedo","CO₂ hält Wärme; helles Eis reflektiert (hohe Albedo)","L4","Profi / Matura","Rückkopplung bei Eisschmelze."],
+          ["Passatkreislauf & ITC","Zenitalregen am Äquator; Wendekreiswüsten bei ~30°","L4","Profi / Matura","El Niño im Pazifik."],
+          ["Nachhaltigkeitsdreieck","Ökologie, Ökonomie, Soziales","L4","Profi / Matura","Zukunftssicherung."],
+          ["Standortfaktoren (hart vs. weich)","Hart: Verkehr, Löhne, Steuern | Weich: Lebensqualität, Kultur","L4","Profi / Matura","Wirtschaftsgeografie."],
+          ["Suburbanisierung vs. Gentrifizierung","Umlandabwanderung vs. Aufwertung & Verteuerung von Vierteln","L4","Profi / Matura","Stadtentwicklung."],
+          ["Push- & Pull-Faktoren","Push = Flucht-/Abwanderungsgründe | Pull = Anziehungskraft","L4","Profi / Matura","Migration."],
+          ["Gini-Koeffizient","Maß für Einkommensungleichheit (0 bis 1)","L4","Profi / Matura","0 = völlig gleich."],
+          ["EU-Binnenmarkt (4 Freiheiten)","Waren, Personen, Dienstleistungen, Kapital","L4","Profi / Matura","Schengen ≠ Eurozone."]
+        ],
+
+        bio: [
+          ["5 Kennzeichen des Lebens","Bewegung, Wachstum, Stoffwechsel, Reizbarkeit, Fortpflanzung","L1","Einstieg","Unterscheidet Lebewesen."],
+          ["5 Wirbeltierklassen","Fische, Amphibien, Reptilien, Vögel, Säugetiere","L1","Einstieg","Wale & Delfine sind Säugetiere."],
+          ["Insekten (Merkmale)","6 Beine, 3 Körperabschnitte, Chitinpanzer","L1","Einstieg","Spinnen haben 8 Beine."],
+          ["4 Grundorgane Blütenpflanze","Wurzel, Sprossachse, Blatt, Blüte","L1","Einstieg","Wurzel nimmt Wasser auf."],
+          ["Fotosynthese","CO₂ + Wasser + Licht → Zucker + Sauerstoff","L1","Einstieg","In Chloroplasten (Chlorophyll)."],
+          ["Menschliches Skelett","Ca. 206 Knochen (Stütze & Schutz)","L1","Einstieg","Gelenke ermöglichen Bewegung."],
+          ["3 Blutbestandteile","Rote (O₂), Weiße (Abwehr), Blutplättchen (Gerinnung)","L1","Einstieg","Im flüssigen Blutplasma."],
+          ["5 Sinnesorgane","Auge, Ohr, Nase, Zunge, Haut","L1","Einstieg","Leiten Reize ans Gehirn."],
+          ["Pflanzen- vs. Tierzelle (3 Extras)","Zellwand, Chloroplasten, große Vakuole","L2","Mittelstufe","Beide haben Zellkern & Mitochondrien."],
+          ["Mitochondrien („Kraftwerke“)","Erzeugen durch Zellatmung Energie (ATP)","L2","Mittelstufe","Zucker + O₂ → CO₂ + H₂O + ATP."],
+          ["Nahrungskette (3 Rollen)","Produzenten (Pflanzen), Konsumenten (Tiere), Destruenten (Pilze/Bakt.)","L2","Mittelstufe","Schließen Stoffkreislauf."],
+          ["Symbiose vs. Parasitismus","Symbiose = Nutzen für beide | Parasitismus = schadet Wirt","L2","Mittelstufe","Biene & Blüte."],
+          ["Herz & Blutkreislauf","Rechts → Lunge | Links → Körper","L2","Mittelstufe","Arterien weg vom Herz, Venen hin."],
+          ["Verdauungsweg","Mund → Speiseröhre → Magen → Dünndarm → Dickdarm","L2","Mittelstufe","Nährstoffaufnahme im Dünndarm."],
+          ["Viren vs. Bakterien","Bakterien = Zellen (Antibiotika) | Viren brauchen Wirtszelle","L2","Mittelstufe","Impfung hilft gegen Viren."],
+          ["Aktive vs. Passive Immunisierung","Aktiv: Impfung bildet eigene Antikörper | Passiv: fertige Antikörper","L2","Mittelstufe","Gedächtniszellen."],
+          ["DNA Basenpaarung","Adenin–Thymin (A–T) und Guanin–Cytosin (G–C)","L3","Aufbau","Doppelhelix im Zellkern."],
+          ["Mitose vs. Meiose","Mitose: 2 diploide Zellen | Meiose: 4 haploide Keimzellen","L3","Aufbau","Mensch hat 46 Chromosomen."],
+          ["Geschlechtschromosomen Mensch","XX = weiblich | XY = männlich","L3","Aufbau","Trisomie 21 = 3× Chromosom 21."],
+          ["Proteinbiosynthese (2 Schritte)","Transkription (DNA→mRNA) & Translation (mRNA→Protein)","L3","Aufbau","3 Basen = 1 Codon."],
+          ["Enzyme (Biokatalysatoren)","Proteine, die Reaktionen beschleunigen (Schlüssel-Schloss)","L3","Aufbau","pH- und temperaturabhängig."],
+          ["Osmose","Wasserwanderung durch Membran zum höheren Stoffanteil","L3","Aufbau","Hält Pflanzenzellen prall (Turgor)."],
+          ["1. Mendelsche Regel","Kreuzung reinerbiger Eltern → alle F₁-Nachkommen gleich","L3","Aufbau","2. Regel: Spaltung 3:1."],
+          ["Lotka-Volterra (Räuber-Beute)","Beutemaximum liegt zeitlich vor Räubermaximum","L3","Aufbau","Schwanken phasenverschoben."],
+          ["Evolution nach Darwin","Mutation/Variation + Selektion + Vererbung","L4","Profi / Matura","Anpassung an Umwelt."],
+          ["Homolog vs. Analog","Homolog: gleicher Bauplan | Analog: gleiche Funktion","L4","Profi / Matura","Homologie zeigt Abstammung."],
+          ["CRISPR/Cas9 & PCR","CRISPR = Genschere | PCR = DNA-Vervielfältigung","L4","Profi / Matura","Moderne Biotechnologie."],
+          ["Eutrophierung","Überdüngung → Algenblüte → Sauerstoffmangel","L4","Profi / Matura","Umkippen von Seen."],
+          ["Sympathikus vs. Parasympathikus","Sympathikus = Aktivität/Stress | Parasympathikus = Ruhe/Verdauung","L4","Profi / Matura","Vegetatives Nervensystem."],
+          ["Aktionspotenzial","Na⁺-Einstrom und K⁺-Ausstrom; Ruhe ca. −70 mV","L4","Profi / Matura","Alles-oder-Nichts-Prinzip."],
+          ["T-Helferzellen vs. B-Zellen","T-Helfer steuern Abwehr; B-Zellen bilden Antikörper","L4","Profi / Matura","Spezifische Immunantwort."],
+          ["Epigenetik","Änderung der Genaktivität ohne Änderung der DNA-Sequenz","L4","Profi / Matura","Umwelt beeinflusst Genexpression."]
+        ],
+
+        hist: [
+          ["Altsteinzeit vs. Jungsteinzeit","Jäger & Sammler vs. Ackerbau & Sesshaftigkeit","L1","Einstieg","Neolithische Revolution."],
+          ["Erfindung der Schrift","Keilschrift der Sumerer (~3200 v. Chr.)","L1","Einstieg","Hieroglyphen in Ägypten."],
+          ["Untergang Westroms","476 n. Chr. (Beginn Mittelalter)","L1","Einstieg","Antike endet."],
+          ["Erste Nennung „Ostarrîchi“","996 n. Chr.","L1","Einstieg","Babenberger."],
+          ["Buchdruck (Gutenberg)","ca. 1450","L1","Einstieg","Bewegliche Lettern."],
+          ["1492 & 1517","1492: Kolumbus in Amerika | 1517: Luthers Reformation","L1","Einstieg","Beginn Neuzeit."],
+          ["Dreißigjähriger Krieg","1618–1648 (Westfälischer Frieden)","L2","Mittelstufe","Absolutismus danach."],
+          ["Maria Theresia (Schulpflicht)","1774 (Allgemeine Schulpflicht)","L2","Mittelstufe","Habsburgerreich."],
+          ["Französische Revolution","1789 (Freiheit, Gleichheit, Brüderlichkeit)","L2","Mittelstufe","1776 USA unabhängig."],
+          ["Wiener Kongress & 1848","1814/15: Neuordnung Europas | 1848: Revolution","L2","Mittelstufe","Industrielle Revolution."],
+          ["Erster Weltkrieg","1914–1918 (Sarajevo 28.6.1914)","L2","Mittelstufe","Ende der Monarchie."],
+          ["Erste Republik Österreich","12. November 1918 (Frauenwahlrecht!)","L2","Mittelstufe","1919 Saint-Germain."],
+          ["1929 / 1933 / 1938","1929 Crash | 1933 Ausschaltung Parlament | 1938 „Anschluss“","L3","Aufbau","Ende der Demokratie."],
+          ["Zweiter Weltkrieg & Holocaust","1939–1945 (60–70 Mio. Tote; Mord an 6 Mio. Juden)","L3","Aufbau","1945 Befreiung."],
+          ["Österreichischer Staatsvertrag","15. Mai 1955 („Österreich ist frei!“)","L3","Aufbau","Abzug Besatzungstruppen."],
+          ["Immerwährende Neutralität","26. Oktober 1955 (Nationalfeiertag)","L3","Aufbau","Kein Militärbündnis."],
+          ["Kalter Krieg & Mauerfall","1947–1991 | Berliner Mauer fiel am 9.11.1989","L3","Aufbau","USA vs. UdSSR."],
+          ["EU-Beitritt Österreichs","1. Januar 1995 (Euro ab 2002)","L3","Aufbau","Europäische Integration."],
+          ["Primär- vs. Sekundärquelle","Original aus der Zeit vs. spätere Darstellung","L4","Profi / Matura","Historische Methode."],
+          ["Gewaltenteilung (3 Gewalten)","Legislative, Exekutive, Judikative","L4","Profi / Matura","Kontrolle der Macht."],
+          ["Österreichisches Parlament","Nationalrat + Bundesrat","L4","Profi / Matura","Direkte Demokratie: 3 Instrumente."],
+          ["Menschenrechtserklärung UNO","10. Dezember 1948","L4","Profi / Matura","Reaktion auf 2. Weltkrieg."],
+          ["Verträge von Rom & Maastricht","1957: EWG | 1992: EU","L4","Profi / Matura","Einigungsprozess."],
+          ["Sozialpartnerschaft & Rechtsstaat","Arbeitnehmer/Arbeitgeber kooperieren; Staat an Gesetz gebunden","L4","Profi / Matura","Verfassungsgerichtshof."]
+        ],
+
+        phys: [
+          ["SI-Basiseinheiten (Länge, Masse, Zeit)","Meter (m), Kilogramm (kg), Sekunde (s)","L1","Einstieg","Ampere (A), Kelvin (K)."],
+          ["Geschwindigkeit v (Formel)","v = s / t (m/s · 3,6 = km/h)","L1","Einstieg","10 m/s = 36 km/h."],
+          ["Dichte ρ (Formel)","ρ = m / V (Wasser = 1 g/cm³)","L1","Einstieg","1.000 kg/m³."],
+          ["3 Wärmeübertragungsarten","Leitung, Konvektion (Strömung), Strahlung","L1","Einstieg","Strahlung geht im Vakuum."],
+          ["Licht- & Schallgeschwindigkeit","Licht ≈ 300.000 km/s | Schall ≈ 343 m/s","L1","Einstieg","Schall braucht Medium."],
+          ["Reflexionsgesetz","Einfallswinkel α = Reflexionswinkel α'","L1","Einstieg","Sammellinse bündelt Licht."],
+          ["Kraft F & Gewichtskraft F_G","F = m · a (N) | F_G = m · g (g ≈ 9,81 m/s²)","L2","Mittelstufe","1 N ≈ 100 g."],
+          ["Druck p (Formel & Einheit)","p = F / A (Pascal Pa; 1 bar = 100.000 Pa)","L2","Mittelstufe","Archimedes-Auftrieb."],
+          ["Arbeit W & Leistung P","W = F · s (Joule J) | P = W / t (Watt W)","L2","Mittelstufe","Energieerhaltung."],
+          ["Kinetische & Potenzielle Energie","E_kin = ½·m·v² | E_pot = m·g·h","L2","Mittelstufe","Wirkungsgrad η < 100 %."],
+          ["Ohmsches Gesetz & Leistung","U = R · I (Volt, Ohm, Ampere) | P = U · I","L2","Mittelstufe","Haushalt: 230 V."],
+          ["Serie vs. Parallel","Serie: Strom I gleich | Parallel: Spannung U gleich","L2","Mittelstufe","Steckdosen parallel."],
+          ["Beschleunigte Bewegung & Impuls","s = ½·a·t² | v = a·t | p = m·v","L3","Aufbau","Hebelgesetz: F₁·r₁ = F₂·r₂."],
+          ["Frequenz, Periodendauer & Welle","f = 1 / T (Hz) | c = λ · f","L3","Aufbau","Zentripetalkraft: m·v²/r."],
+          ["Transformator-Formel","U₁ / U₂ = N₁ / N₂ (nur Wechselstrom)","L3","Aufbau","Induktion."],
+          ["1. Hauptsatz Thermodynamik","ΔU = Q + W","L3","Aufbau","Ideales Gas: p·V = n·R·T."],
+          ["Gravitationsgesetz (Newton)","F = G · (m₁ · m₂) / r²","L3","Aufbau","Planetenbahnen."],
+          ["Brechung & Totalreflexion","Zum Lot beim Übergang ins dichtere Medium","L3","Aufbau","Glasfaser nutzt Totalreflexion."],
+          ["Photoeffekt & Photonen","E = h · f (Lichtquanten)","L4","Profi / Matura","λ = h / p."],
+          ["Heisenbergsche Unschärfe","Δx · Δp ≥ h / (4π)","L4","Profi / Matura","Quantenmechanik."],
+          ["Radioaktivität (α, β, γ)","α: He-Kern | β: Elektron | γ: Photon","L4","Profi / Matura","Halbwertszeit T₁/₂."],
+          ["Masse-Energie-Äquivalenz","E = m · c²","L4","Profi / Matura","Zeitdilatation."],
+          ["Doppelspalt & Dopplereffekt","Interferenz = Welle | Doppler = Frequenzshift","L4","Profi / Matura","Rotverschiebung."],
+          ["Kondensator & Diode","C = Q / U (Farad) | Diode leitet nur 1 Richtung","L4","Profi / Matura","LEDs & Halbleiter."]
+        ],
+
+        info: [
+          ["EVA-Prinzip & CPU","Eingabe – Verarbeitung – Ausgabe | CPU = Prozessor","L1","Einstieg","Rechenwerk."],
+          ["RAM vs. SSD","RAM = flüchtig | SSD = dauerhafter Speicher","L1","Einstieg","1 Byte = 8 Bit."],
+          ["Binärsystem (0 und 1)","Basis 2 (z. B. 5 = binär 101)","L1","Einstieg","Hex = Basis 16."],
+          ["Betriebssystem & Endungen","Windows/macOS/Linux | .pdf, .jpg, .html","L1","Einstieg","Vorsicht bei .exe."],
+          ["Passwortsicherheit & Phishing","Min. 12 Zeichen + 2FA | Phishing = Datenklau","L1","Einstieg","URL prüfen."],
+          ["Browser vs. Suchmaschine","Browser zeigt Webseiten (https://); Suchmaschine findet sie","L1","Einstieg","HTTPS verschlüsselt."],
+          ["Algorithmus & Variable","Eindeutige Schrittfolge | benannter Speicher","L2","Mittelstufe","int, float, string, bool."],
+          ["if/else & Schleifen (for/while)","Verzweigung vs. Wiederholung","L2","Mittelstufe","Programmlogik."],
+          ["HTML, CSS & JavaScript","Struktur, Design, Interaktivität","L2","Mittelstufe","3 Web-Säulen."],
+          ["IP-Adresse, DNS & Router","Adresse, Namensauflösung, Netzverknüpfung","L2","Mittelstufe","Switch im LAN."],
+          ["2FA & 3-2-1 Backup","Zwei Beweise; 3 Kopien, 2 Medien, 1 extern","L2","Mittelstufe","Schutz vor Ransomware."],
+          ["Pixel- vs. Vektorgrafik","Raster (JPG/PNG) vs. Kurven (SVG verlustfrei)","L2","Mittelstufe","=SUMME(), $A$1."],
+          ["Funktionen, Arrays & JSON","return | Index startet bei 0 | Key-Value","L3","Aufbau","DRY-Prinzip."],
+          ["Relationale DB & SQL","Primary/Foreign Key | SELECT ... FROM ... WHERE","L3","Aufbau","Normalisierung."],
+          ["HTTP & Client-Server","GET/POST | Status 200 OK, 404 Not Found","L3","Aufbau","REST-APIs."],
+          ["Symmetrisch vs. Asymmetrisch","1 Schlüssel vs. Public + Private Key","L3","Aufbau","SHA-256 Hash."],
+          ["Logikgatter","AND, OR, NOT, XOR","L3","Aufbau","Digitaltechnik."],
+          ["Git & DSGVO","Versionskontrolle | EU-Datenschutz","L3","Aufbau","Datensparsamkeit."],
+          ["O-Notation (Komplexität)","O(1) < O(log n) < O(n) < O(n log n) < O(n²)","L4","Profi / Matura","Binäre Suche O(log n)."],
+          ["Stack (LIFO) vs. Queue (FIFO)","Stapel vs. Warteschlange","L4","Profi / Matura","Rekursion nutzt Stack."],
+          ["OOP (4 Säulen)","Abstraktion, Kapselung, Vererbung, Polymorphie","L4","Profi / Matura","Klassen & Objekte."],
+          ["Machine Learning & Neuronale Netze","Supervised vs. Unsupervised; Backpropagation","L4","Profi / Matura","KI-Halluzinationen prüfen."],
+          ["Halteproblem (Turing)","Nicht allgemein entscheidbar, ob jedes Programm hält","L4","Profi / Matura","Grenze der Informatik."],
+          ["ACID & TCP vs. UDP","Transaktionssicherheit | TCP zuverlässig vs. UDP schnell","L4","Profi / Matura","Gaming/Video nutzt UDP."]
+        ],
+
+        art: [
+          ["Stammnoten & Notenwerte","c–d–e–f–g–a–h | Ganze(4), Halbe(2), Viertel(1), Achtel(1/2)","L1","Einstieg","Punkt verlängert um 50 %."],
+          ["Violinschlüssel & Dynamik","G-Schlüssel | piano = leise, forte = laut","L1","Einstieg","crescendo = lauter."],
+          ["4 Orchestergruppen","Streicher, Holzbläser, Blechbläser, Schlagzeug","L1","Einstieg","Allegro schnell, Adagio langsam."],
+          ["Primär- & Komplementärfarben","Rot, Gelb, Blau | Rot–Grün, Blau–Orange, Gelb–Violett","L1","Einstieg","Warm vs. Kalt."],
+          ["3 klassische Bildgattungen","Portrait, Landschaft, Stillleben","L1","Einstieg","Gegenständlich vs. abstrakt."],
+          ["Skulptur vs. Plastik","Abtragend (Stein) vs. aufbauend (Ton)","L1","Einstieg","3D-Kunst."],
+          ["Versetzungszeichen & Bassschlüssel","# (+is), b (+es) | F-Schlüssel","L2","Mittelstufe","Dur vs. Moll."],
+          ["Dreiklang & Intervalle","Grundton + Terz + Quinte | Prime bis Oktave","L2","Mittelstufe","Oktave = 2× Frequenz."],
+          ["Wiener Klassik & J. S. Bach","Haydn, Mozart, Beethoven | Bach (Barock)","L2","Mittelstufe","Sinfonie vs. Solokonzert."],
+          ["Zentralperspektive & Goldener Schnitt","Fluchtpunkt | Verhältnis ~1 : 1,618","L2","Mittelstufe","Renaissance."],
+          ["Chiaroscuro","Starkes Helldunkel (Rembrandt, Caravaggio)","L2","Mittelstufe","Dramatik."],
+          ["Holzschnitt vs. Radierung","Hochdruck vs. Tiefdruck","L2","Mittelstufe","Lithografie = Flachdruck."],
+          ["Romanik, Gotik, Renaissance, Barock","Rundbogen → Spitzbogen → Harmonie → Prunk","L3","Aufbau","Stephansdom vs. Schönbrunn."],
+          ["Impressionismus vs. Expressionismus","Lichtstimmung (Monet) vs. Gefühle (Schiele, Munch)","L3","Aufbau","Jugendstil: Klimt."],
+          ["Kubismus & Surrealismus","Geometrie (Picasso) vs. Traumwelt (Dalí)","L3","Aufbau","20. Jahrhundert."],
+          ["Sonatenhauptsatzform","Exposition – Durchführung – Reprise","L3","Aufbau","Klassische Großform."],
+          ["Kadenz & Pentatonik","I – IV – V – I | 5-Tonleiter","L3","Aufbau","Harmonielehre."],
+          ["Jazz (Merkmale)","Improvisation, Swing, Synkopen, Blue Notes","L3","Aufbau","New Orleans um 1900."],
+          ["Bauhaus & Pop Art","Form follows function | Alltag als Kunst (Warhol)","L4","Profi / Matura","Action Painting, Readymade."],
+          ["Friedensreich Hundertwasser","Keine gerade Linie, bunte Architektur, Baummieter","L4","Profi / Matura","Wien."],
+          ["Zwölftontechnik & Minimal Music","Schönberg (12 gleichberechtigte Töne) | Glass/Reich","L4","Profi / Matura","Neue Musik."],
+          ["Polyphonie vs. Homophonie","Mehrere Hauptmelodien vs. 1 Melodie + Begleitung","L4","Profi / Matura","Leitmotiv."],
+          ["Quintenzirkel","12 Tonarten im Quintabstand (+# rechts, +b links)","L4","Profi / Matura","Vorzeichen."],
+          ["7 Farbkontraste nach Itten","Kalt-Warm, Komplementär, Simultan, Qualität, Quantität...","L4","Profi / Matura","Messe & Requiem."]
+        ]
+      };
+
+      const CORE_ITEMS = [];
+      for (const [sid, rows] of Object.entries(RAW_DATA)) {
+        rows.forEach((r, i) => CORE_ITEMS.push({ id:`${sid}_${i}`, subj:sid, en:r[0], de:r[1], lvl:r[2], cat:r[3], ex:r[4]||"", svg:r[5]||"", isCustom:false }));
+      }
+
+      /* ===========================================================
+         2. ACCOUNT, PASSWORD HASHING & CLOUD SYNC (GITHUB READY)
+         =========================================================== */
+      const ACCOUNTS_KEY = "lexiflow_accounts_registry_v1";
+      const SESSION_KEY = "lexiflow_active_session_v1";
+      const CLOUD_CFG_KEY = "lexiflow_cloud_cfg_v1";
+      const THEME_KEY = "lexiflow_theme_v1";
+
+      function getCloudConfig() {
+        if (DEFAULT_CLOUD_CONFIG.url && DEFAULT_CLOUD_CONFIG.key) return DEFAULT_CLOUD_CONFIG;
+        try {
+          const saved = JSON.parse(localStorage.getItem(CLOUD_CFG_KEY) || "null");
+          if (saved && saved.url && saved.key) return saved;
+        } catch {}
+        return null;
+      }
+
+      async function sha256Hex(str) {
+        if (window.crypto && window.crypto.subtle) {
+          const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+          return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+        }
+        let h = 2166136261;
+        for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+        return (h >>> 0).toString(16);
+      }
+
+      function randomSalt() {
+        const arr = new Uint8Array(12);
+        if (window.crypto?.getRandomValues) crypto.getRandomValues(arr);
+        else for (let i=0;i<12;i++) arr[i]=Math.floor(Math.random()*256);
+        return Array.from(arr).map(b=>b.toString(16).padStart(2,"0")).join("");
+      }
+
+      function getLocalAccounts() {
+        try { return JSON.parse(localStorage.getItem(ACCOUNTS_KEY) || "{}"); } catch { return {}; }
+      }
+      function saveLocalAccounts(obj) {
+        localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(obj));
+      }
+
+      async function cloudFetch(path, options = {}) {
+        const cfg = getCloudConfig();
+        if (!cfg) throw new Error("NO_CLOUD");
+        const base = cfg.url.replace(/\/+$/, "");
+        const res = await fetch(`${base}/rest/v1/${path}`, {
+          ...options,
+          headers: {
+            "apikey": cfg.key,
+            "Authorization": `Bearer ${cfg.key}`,
+            "Content-Type": "application/json",
+            ...(options.headers || {})
+          }
+        });
+        return res;
+      }
+
+      const defaultProgress = () => ({
+        xp:0, streak:0, activeSubject:"en",
+        activeLevels:{en:"A1",math:"L1",de:"L1",gz:"L1",geo:"L1",bio:"L1",hist:"L1",phys:"L1",info:"L1",art:"L1"},
+        placementLevels:{}, masteredIds:[], reviewIds:[], customItems:[]
+      });
+
+      let currentUser = null; // { username, isGuest, cloud }
+      let state = defaultProgress();
+
+      async function checkUsernameAvailable(username) {
+        const clean = username.trim().toLowerCase();
+        if (clean.length < 3 || !/^[a-z0-9_.-]+$/.test(clean)) return { valid:false, reason:"3–24 Zeichen (a-z, 0-9, _, ., -)." };
+        const local = getLocalAccounts();
+        if (local[clean]) return { valid:true, taken:true };
+        const cfg = getCloudConfig();
+        if (cfg) {
+          try {
+            const r = await cloudFetch(`lexiflow_users?username=eq.${encodeURIComponent(clean)}&select=username`);
+            if (r.ok) {
+              const rows = await r.json();
+              if (rows.length > 0) return { valid:true, taken:true };
+            }
+          } catch {}
+        }
+        return { valid:true, taken:false };
+      }
+
+      let syncTimer = null;
+      function saveProgress() {
+        if (!currentUser) return;
+        const clean = currentUser.username;
+        if (currentUser.isGuest) {
+          localStorage.setItem("lexiflow_guest_prog", JSON.stringify(state));
+        } else {
+          const accs = getLocalAccounts();
+          if (accs[clean]) {
+            accs[clean].progress = state;
+            saveLocalAccounts(accs);
+          }
+          if (getCloudConfig()) {
+            const ind = document.getElementById("syncIndicator");
+            if (ind) ind.textContent = "· 🔄 speichert...";
+            clearTimeout(syncTimer);
+            syncTimer = setTimeout(async () => {
+              try {
+                const r = await cloudFetch(`lexiflow_users?username=eq.${encodeURIComponent(clean)}`, {
+                  method: "PATCH",
+                  body: JSON.stringify({ progress: state, updated_at: new Date().toISOString() })
+                });
+                if (ind) ind.textContent = r.ok ? "· ☁️ Cloud gespeichert" : "· 💾 Lokal gespeichert";
+              } catch {
+                if (ind) ind.textContent = "· 💾 Lokal gespeichert";
+              }
+            }, 500);
+          }
+        }
+        updateHud();
+      }
+
+      async function loginUserSession(username, progressObj, isGuest = false) {
+        currentUser = { username, isGuest, cloud: Boolean(getCloudConfig() && !isGuest) };
+        state = { ...defaultProgress(), ...(progressObj || {}), activeLevels:{ ...defaultProgress().activeLevels, ...(progressObj?.activeLevels || {}) } };
+        localStorage.setItem(SESSION_KEY, JSON.stringify({ username, isGuest }));
+        document.getElementById("mainNav").style.display = "flex";
+        document.getElementById("hudRankPill").style.display = "inline-flex";
+        document.getElementById("hudStreakPill").style.display = "inline-flex";
+        document.getElementById("hudXpPill").style.display = "inline-flex";
+        document.getElementById("courseUserLabel").textContent = isGuest ? "Gast (Lokal)" : username;
+        updateHud();
+        switchView(Object.keys(state.placementLevels).length ? "course" : "test");
+      }
+
+      function logoutSession() {
+        currentUser = null;
+        localStorage.removeItem(SESSION_KEY);
+        document.getElementById("mainNav").style.display = "none";
+        document.getElementById("hudRankPill").style.display = "none";
+        document.getElementById("hudStreakPill").style.display = "none";
+        document.getElementById("hudXpPill").style.display = "none";
+        updateHud();
+        closeCloudModal();
+        switchView("auth");
+      }
+
+      // Auth UI Handlers
+      let authMode = "signin";
+      function setAuthMode(mode) {
+        authMode = mode;
+        document.getElementById("tabSignIn").classList.toggle("active", mode === "signin");
+        document.getElementById("tabSignUp").classList.toggle("active", mode === "signup");
+        document.getElementById("authPassConfirmWrap").style.display = mode === "signup" ? "block" : "none";
+        document.getElementById("authSubmitBtn").textContent = mode === "signin" ? "🔑 Jetzt anmelden" : "✨ Konto erstellen & starten";
+        document.getElementById("authErrorMsg").style.display = "none";
+        document.getElementById("usernameHint").textContent = mode === "signup" ? "3–24 Zeichen (Buchstaben, Zahlen, _ . -)" : "";
+      }
+      document.getElementById("tabSignIn").addEventListener("click", () => setAuthMode("signin"));
+      document.getElementById("tabSignUp").addEventListener("click", () => setAuthMode("signup"));
+
+      let nameChkTimer = null;
+      document.getElementById("authUsername").addEventListener("input", () => {
+        if (authMode !== "signup") return;
+        const val = document.getElementById("authUsername").value.trim().toLowerCase();
+        const hint = document.getElementById("usernameHint");
+        if (val.length < 3) { hint.textContent = "Mindestens 3 Zeichen erforderlich."; hint.style.color = "var(--text-muted)"; return; }
+        clearTimeout(nameChkTimer);
+        nameChkTimer = setTimeout(async () => {
+          const res = await checkUsernameAvailable(val);
+          if (!res.valid) { hint.textContent = "❌ " + res.reason; hint.style.color = "var(--danger)"; }
+          else if (res.taken) { hint.textContent = "❌ Dieser Nutzername ist leider schon vergeben!"; hint.style.color = "var(--danger)"; }
+          else { hint.textContent = "✅ Nutzername ist verfügbar!"; hint.style.color = "var(--success)"; }
+        }, 280);
+      });
+
+      document.getElementById("authForm").addEventListener("submit", async e => {
+        e.preventDefault();
+        const errEl = document.getElementById("authErrorMsg");
+        errEl.style.display = "none";
+        const rawUser = document.getElementById("authUsername").value.trim().toLowerCase();
+        const pass = document.getElementById("authPassword").value;
+        const pass2 = document.getElementById("authPassword2").value;
+        const btn = document.getElementById("authSubmitBtn");
+
+        const showErr = msg => { errEl.textContent = msg; errEl.style.display = "block"; };
+        if (rawUser.length < 3 || !/^[a-z0-9_.-]+$/.test(rawUser)) return showErr("❌ Ungültiger Nutzername (3–24 Zeichen: a-z, 0-9, _ . -).");
+        if (pass.length < 4) return showErr("❌ Das Passwort muss mindestens 4 Zeichen lang sein.");
+
+        btn.disabled = true;
+        try {
+          if (authMode === "signup") {
+            if (pass !== pass2) return showErr("❌ Passwörter stimmen nicht überein.");
+            const avail = await checkUsernameAvailable(rawUser);
+            if (!avail.valid) return showErr("❌ " + avail.reason);
+            if (avail.taken) return showErr("❌ Dieser Nutzername ist bereits vergeben! Bitte wähle einen anderen.");
+
+            const salt = randomSalt();
+            const passHash = await sha256Hex(`${salt}:${pass}`);
+            const initProg = defaultProgress();
+
+            if (getCloudConfig()) {
+              const r = await cloudFetch("lexiflow_users", {
+                method: "POST",
+                headers: { "Prefer": "return=minimal" },
+                body: JSON.stringify({ username: rawUser, salt, pass_hash: passHash, progress: initProg })
+              });
+              if (!r.ok) {
+                if (r.status === 409) return showErr("❌ Nutzername ist in der Cloud bereits vergeben!");
+                throw new Error("Cloud-Fehler");
+              }
+            }
+            const accs = getLocalAccounts();
+            accs[rawUser] = { salt, passHash, progress: initProg };
+            saveLocalAccounts(accs);
+            showToast(`🎉 Willkommen, ${rawUser}! Dein Konto wurde erstellt.`);
+            await loginUserSession(rawUser, initProg, false);
+          } else {
+            // Sign In
+            let record = null;
+            if (getCloudConfig()) {
+              try {
+                const r = await cloudFetch(`lexiflow_users?username=eq.${encodeURIComponent(rawUser)}&select=*`);
+                if (r.ok) {
+                  const rows = await r.json();
+                  if (rows.length > 0) record = { salt: rows[0].salt, passHash: rows[0].pass_hash, progress: rows[0].progress };
+                }
+              } catch {}
+            }
+            if (!record) {
+              const accs = getLocalAccounts();
+              if (accs[rawUser]) record = accs[rawUser];
+            }
+            if (!record) return showErr("❌ Nutzername nicht gefunden. Bitte registriere dich zuerst.");
+
+            const testHash = await sha256Hex(`${record.salt}:${pass}`);
+            if (testHash !== record.passHash) return showErr("❌ Falsches Passwort!");
+
+            // Cache locally too
+            const accs = getLocalAccounts();
+            accs[rawUser] = record;
+            saveLocalAccounts(accs);
+
+            showToast(`👋 Schön, dass du da bist, ${rawUser}!`);
+            await loginUserSession(rawUser, record.progress, false);
+          }
+        } catch {
+          showErr("⚠️ Verbindungsproblem bei der Anmeldung. Prüfe Internet oder Cloud-Einstellung.");
+        } finally {
+          btn.disabled = false;
+        }
+      });
+
+      document.getElementById("guestLoginBtn").addEventListener("click", () => {
+        let g = null;
+        try { g = JSON.parse(localStorage.getItem("lexiflow_guest_prog") || "null"); } catch {}
+        loginUserSession("Gast", g || defaultProgress(), true);
+      });
+
+      // Cloud Setup Modal
+      function openCloudModal() {
+        const cfg = getCloudConfig();
+        document.getElementById("cfgSupabaseUrl").value = cfg?.url || "";
+        document.getElementById("cfgSupabaseKey").value = cfg?.key || "";
+        const loggedBox = document.getElementById("loggedAccountBox");
+        if (currentUser) {
+          loggedBox.style.display = "flex";
+          document.getElementById("modalUsername").textContent = currentUser.username;
+          document.getElementById("modalSyncType").textContent = currentUser.cloud ? "☁️ Cloud-Sync aktiv" : "💻 Browser-Speicher";
+        } else loggedBox.style.display = "none";
+        document.getElementById("cloudModal").classList.add("open");
+      }
+      function closeCloudModal() { document.getElementById("cloudModal").classList.remove("open"); }
+      function updateCloudBadge() {
+        const has = Boolean(getCloudConfig());
+        const b = document.getElementById("cloudStatusBadge");
+        b.textContent = has ? "☁️ Cloud-Sync aktiv (Multi-Gerät)" : "💻 Browser-Konto (Lokal)";
+        b.className = has ? "badge badge-A1" : "badge";
+      }
+
+      document.getElementById("hudUserBtn").addEventListener("click", () => {
+        if (!currentUser) switchView("auth");
+        else openCloudModal();
+      });
+      document.getElementById("openCloudSetupBtn").addEventListener("click", openCloudModal);
+      document.getElementById("closeCloudModalBtn").addEventListener("click", closeCloudModal);
+      document.getElementById("logoutBtn").addEventListener("click", logoutSession);
+      document.getElementById("saveCloudCfgBtn").addEventListener("click", async () => {
+        const url = document.getElementById("cfgSupabaseUrl").value.trim();
+        const key = document.getElementById("cfgSupabaseKey").value.trim();
+        if (!url.startsWith("https://") || key.length < 20) return showToast("Bitte gültige Supabase URL & Key eingeben.");
+        localStorage.setItem(CLOUD_CFG_KEY, JSON.stringify({ url, key }));
+        try {
+          const r = await cloudFetch("lexiflow_users?select=username&limit=1");
+          if (!r.ok) throw new Error();
+          updateCloudBadge();
+          showToast("✅ Cloud erfolgreich verbunden!");
+          closeCloudModal();
+        } catch {
+          localStorage.removeItem(CLOUD_CFG_KEY);
+          updateCloudBadge();
+          showToast("❌ Verbindung fehlgeschlagen. Wurde das SQL-Skript ausgeführt?");
+        }
+      });
+      document.getElementById("clearCloudCfgBtn").addEventListener("click", () => {
+        localStorage.removeItem(CLOUD_CFG_KEY); updateCloudBadge(); showToast("Cloud getrennt."); closeCloudModal();
+      });
+
+      /* ===========================================================
+         3. GZ SVGs & INFINITE TASK GENERATORS
+         =========================================================== */
+      function renderGzSvg(key) {
+        if (!key) return "";
+        const wrap = s => `<div class="gz-svg-box"><svg width="166" height="74" viewBox="0 0 170 78" fill="none" xmlns="http://www.w3.org/2000/svg">${s}</svg></div>`;
+        const m = {
+          line_full:`<line x1="15" y1="39" x2="155" y2="39" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>`,
+          line_dash:`<line x1="15" y1="39" x2="155" y2="39" stroke="currentColor" stroke-width="2.5" stroke-dasharray="9 6"/>`,
+          line_dashdot:`<line x1="15" y1="39" x2="155" y2="39" stroke="#6366f1" stroke-width="2" stroke-dasharray="14 5 2 5"/>`,
+          acute:`<path d="M35 62 L140 62 M35 62 L115 16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M72 62 A37 37 0 0 0 67 43" stroke="#6366f1" stroke-width="2"/><text x="78" y="54" fill="#6366f1" font-size="12" font-weight="bold">α &lt; 90°</text>`,
+          right:`<path d="M50 64 L135 64 M50 64 L50 14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M50 40 A24 24 0 0 1 74 64" stroke="#10b981" stroke-width="2"/><circle cx="59" cy="55" r="2.5" fill="#10b981"/><text x="84" y="45" fill="#10b981" font-size="12" font-weight="bold">90°</text>`,
+          straight:`<line x1="18" y1="54" x2="152" y2="54" stroke="currentColor" stroke-width="2.5"/><circle cx="85" cy="54" r="3" fill="#6366f1"/><path d="M62 54 A23 23 0 0 1 108 54" stroke="#6366f1" stroke-width="2"/><text x="73" y="24" fill="#6366f1" font-size="12" font-weight="bold">180°</text>`,
+          parallel:`<line x1="20" y1="26" x2="150" y2="26" stroke="currentColor" stroke-width="2.5"/><line x1="20" y1="52" x2="150" y2="52" stroke="currentColor" stroke-width="2.5"/><text x="72" y="18" fill="#6366f1" font-size="12" font-weight="bold">g ∥ h</text>`,
+          symmetry:`<line x1="85" y1="8" x2="85" y2="70" stroke="#ef4444" stroke-width="2" stroke-dasharray="9 4 2 4"/><polygon points="35,55 70,22 70,55" fill="rgba(99,102,241,0.22)" stroke="#6366f1" stroke-width="2"/><polygon points="135,55 100,22 100,55" fill="rgba(16,185,129,0.22)" stroke="#10b981" stroke-width="2"/>`,
+          circle_parts:`<circle cx="80" cy="40" r="26" stroke="currentColor" stroke-width="2"/><circle cx="80" cy="40" r="2.5" fill="currentColor"/><line x1="80" y1="40" x2="106" y2="40" stroke="#6366f1" stroke-width="2"/><line x1="106" y1="10" x2="106" y2="70" stroke="#ef4444" stroke-width="2"/><text x="90" y="36" fill="#6366f1" font-size="10" font-weight="bold">r</text><text x="111" y="25" fill="#ef4444" font-size="10" font-weight="bold">t</text>`,
+          projections:`<rect x="25" y="10" width="38" height="24" stroke="#6366f1" stroke-width="2"/><rect x="25" y="44" width="38" height="24" stroke="#10b981" stroke-width="2"/><rect x="78" y="10" width="24" height="24" stroke="#f59e0b" stroke-width="2"/><text x="30" y="26" fill="#6366f1" font-size="10" font-weight="bold">AR</text><text x="30" y="60" fill="#10b981" font-size="10" font-weight="bold">GR</text><text x="82" y="26" fill="#f59e0b" font-size="10" font-weight="bold">KR</text>`,
+          oblique:`<rect x="35" y="26" width="52" height="38" stroke="currentColor" stroke-width="2"/><rect x="57" y="12" width="52" height="38" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3"/><line x1="35" y1="26" x2="57" y2="12" stroke="#6366f1" stroke-width="2"/><line x1="87" y1="26" x2="109" y2="12" stroke="#6366f1" stroke-width="2"/><line x1="87" y1="64" x2="109" y2="50" stroke="#6366f1" stroke-width="2"/><text x="114" y="40" fill="#6366f1" font-size="10" font-weight="bold">45° / 0,5</text>`
+        };
+        return m[key] ? wrap(m[key]) : "";
+      }
+
+      const randInt = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
+      function shuffle(arr) { const c=[...arr]; for(let i=c.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[c[i],c[j]]=[c[j],c[i]];} return c; }
+      function makeNumOpts(val, range = 12, suffix = "") {
+        const set = new Set([String(val) + suffix]); let t = 0;
+        while (set.size < 4 && t++ < 60) {
+          const d = randInt(-range, range); if (!d) continue;
+          set.add(String(Number.isInteger(val) ? val + d : Number((val + d * 0.5).toFixed(1))) + suffix);
+        }
+        return shuffle([...set]);
+      }
+      function genFromPool(subj, lvl) {
+        const pool = CORE_ITEMS.filter(x => x.subj === subj && x.lvl === lvl);
+        const pick = pool[randInt(0, pool.length - 1)];
+        const dist = shuffle(CORE_ITEMS.filter(x => x.subj === subj && x.id !== pick.id)).slice(0, 3).map(d => d.de);
+        return { en: pick.en, de: pick.de, opts: shuffle([pick.de, ...dist]), ex: pick.ex, svg: pick.svg };
+      }
+      function generateDynamicTasks(subj, lvl, count = 12) {
+        const out = [];
+        for (let i = 0; i < count; i++) {
+          let t = null;
+          if (subj==="math") t=genMath(lvl); else if (subj==="gz") t=genGz(lvl); else if (subj==="de") t=genDe(lvl);
+          else if (subj==="geo") t=genGeo(lvl); else if (subj==="bio") t=genBio(lvl); else if (subj==="phys") t=genPhys(lvl);
+          else t=genFromPool(subj,lvl);
+          if (t) out.push({ ...t, id:`gen_${subj}_${i}_${Math.random()}`, subj, lvl, cat:`Generator ${lvl}`, isGenerated:true });
+        }
+        return out;
+      }
+      function genMath(lvl) {
+        if (lvl === "L1") {
+          const k = randInt(0, 3);
+          if (k === 0) { const a=randInt(14,85), b=randInt(12,85); return {en:`Berechne: ${a} + ${b} = ?`,de:String(a+b),opts:makeNumOpts(a+b,14),ex:`${a}+${b}=${a+b}`}; }
+          if (k === 1) { const a=randInt(6,15), b=randInt(4,14); return {en:`Berechne: ${a} · ${b} = ?`,de:String(a*b),opts:makeNumOpts(a*b,18),ex:`${a}·${b}=${a*b}`}; }
+          if (k === 2) { const a=randInt(3,14); return {en:`Umfang Quadrat a = ${a} cm?`,de:`${4*a} cm`,opts:makeNumOpts(4*a,10," cm"),ex:`4 · ${a} = ${4*a} cm`}; }
+          const a=randInt(3,12), b=randInt(2,10); return {en:`Fläche Rechteck a=${a} cm, b=${b} cm?`,de:`${a*b} cm²`,opts:makeNumOpts(a*b,14," cm²"),ex:`${a}·${b}=${a*b} cm²`};
+        }
+        if (lvl === "L2") {
+          const k = randInt(0, 2);
+          if (k === 0) { const x=randInt(2,14), a=randInt(2,6), b=randInt(3,18), r=a*x+b; return {en:`Löse: ${a}x + ${b} = ${r}. x = ?`,de:String(x),opts:makeNumOpts(x,6),ex:`${a}x = ${r-b} ⇒ x = ${x}`}; }
+          if (k === 1) { const p=[10,20,25,50,75][randInt(0,4)], g=randInt(2,10)*20, w=(g*p)/100; return {en:`${p} % von ${g} € = ?`,de:`${w} €`,opts:makeNumOpts(w,22," €"),ex:`(${g}·${p})/100 = ${w} €`}; }
+          const [a,b,c]=[[3,4,5],[6,8,10],[5,12,13],[8,15,17]][randInt(0,3)];
+          return {en:`Rechtwinkeliges Dreieck a=${a}, b=${b}. Hypotenuse c = ?`,de:String(c),opts:makeNumOpts(c,5),ex:`√(${a}²+${b}²) = ${c}`};
+        }
+        if (lvl === "L3") {
+          const k=randInt(-3,5)||2, d=randInt(-4,8), x=randInt(1,5), y=k*x+d;
+          return {en:`Funktion f(x) = ${k}x ${d>=0?"+ "+d:"− "+Math.abs(d)}. f(${x}) = ?`,de:String(y),opts:makeNumOpts(y,10),ex:`${k}·${x}+(${d}) = ${y}`};
+        }
+        if (Math.random() < 0.5) {
+          const c=randInt(2,7), n=randInt(2,5), ans=`${c*n}x^${n-1}`;
+          return {en:`1. Ableitung von f(x) = ${c}x^${n} ?`,de:ans,opts:shuffle([ans,`${c}x^${n-1}`,`${c*n}x^${n}`,`${c*(n+1)}x^${n+1}`]),ex:`Exponent vorziehen und −1.`};
+        }
+        const a=[randInt(1,4),randInt(1,4)], b=[randInt(1,4),randInt(-3,4)], sp=a[0]*b[0]+a[1]*b[1];
+        return {en:`Skalarprodukt (${a[0]}, ${a[1]}) · (${b[0]}, ${b[1]}) = ?`,de:String(sp),opts:makeNumOpts(sp,7),ex:`${a[0]}·${b[0]} + ${a[1]}·(${b[1]}) = ${sp}`};
+      }
+      function genGz(lvl) {
+        if (lvl==="L1" && Math.random()<0.5) { const deg=randInt(10,170), tp=deg<90?"Spitzer Winkel":deg===90?"Rechter Winkel":"Stumpfer Winkel"; return {en:`Welcher Winkeltyp ist α = ${deg}°?`,de:tp,opts:["Spitzer Winkel","Rechter Winkel","Stumpfer Winkel","Gestreckter Winkel"],ex:`<90° spitz, 90° recht, 90–180° stumpf.`}; }
+        if (lvl==="L2" && Math.random()<0.5) { const sc=[10,20,50,100][randInt(0,3)], real=randInt(2,8)*sc, dr=real/sc; return {en:`Maßstab 1:${sc}. Planlänge bei ${real} cm Original?`,de:`${dr} cm`,opts:makeNumOpts(dr,4," cm"),ex:`${real}/${sc} = ${dr} cm.`}; }
+        return genFromPool("gz", lvl);
+      }
+      function genDe(lvl) {
+        if ((lvl==="L1"||lvl==="L2") && Math.random()<0.6) {
+          const qs=[{q:'„Es ist super, ___ du übst.“',a:"dass",d:["das","daß","des"],ex:"Konjunktion nach Komma → dass."},{q:'„___ Buch liegt dort.“',a:"Das",d:["Dass","Daß","Des"],ex:"Artikel vor Nomen → Das."},{q:'„___ ihr schon fertig?“',a:"Seid",d:["Seit","Seidt","Seht"],ex:"Verbform von sein (ihr seid)."},{q:'„Ich wohne ___ drei Jahren hier.“',a:"seit",d:["seid","seidt","saht"],ex:"Zeitangabe → seit."}];
+          const p=qs[randInt(0,qs.length-1)]; return {en:`Setze richtig ein: ${p.q}`,de:p.a,opts:shuffle([p.a,...p.d]),ex:p.ex};
+        }
+        return genFromPool("de", lvl);
+      }
+      function genGeo(lvl) {
+        const at=[["NÖ","St. Pölten"],["OÖ","Linz"],["Steiermark","Graz"],["Kärnten","Klagenfurt"],["Salzburg","Salzburg"],["Tirol","Innsbruck"],["Vorarlberg","Bregenz"],["Burgenland","Eisenstadt"]];
+        const eu=[["Frankreich","Paris"],["Spanien","Madrid"],["Italien","Rom"],["Polen","Warschau"],["Griechenland","Athen"],["Schweden","Stockholm"],["Norwegen","Oslo"],["Ungarn","Budapest"]];
+        if (lvl==="L1") { const it=at[randInt(0,at.length-1)]; const d=shuffle(at.filter(x=>x[1]!==it[1])).slice(0,3).map(x=>x[1]); return {en:`Landeshauptstadt von ${it[0]}?`,de:it[1],opts:shuffle([it[1],...d]),ex:`${it[1]} ist Hauptstadt.`}; }
+        if (lvl==="L2") { const it=eu[randInt(0,eu.length-1)]; const d=shuffle(eu.filter(x=>x[1]!==it[1])).slice(0,3).map(x=>x[1]); return {en:`Hauptstadt von ${it[0]}?`,de:it[1],opts:shuffle([it[1],...d]),ex:`Hauptstadt von ${it[0]}.`}; }
+        return genFromPool("geo", lvl);
+      }
+      function genBio(lvl) {
+        if (lvl==="L3" && Math.random()<0.65) {
+          const bases=["A","T","G","C"], comp={A:"T",T:"A",G:"C",C:"G"}, seq=Array.from({length:6},()=>bases[randInt(0,3)]);
+          const ans=seq.map(b=>comp[b]).join("-"), d1=seq.map(b=>b==="A"?"G":b==="G"?"A":b==="T"?"C":"T").join("-"), d2=seq.map(b=>comp[b]==="T"?"U":comp[b]).join("-"), d3=seq.join("-");
+          if (new Set([ans,d1,d2,d3]).size===4) return {en:`DNA-Basenpaarung: Komplementärstrang zu ${seq.join("-")}?`,de:ans,opts:shuffle([ans,d1,d2,d3]),ex:`A↔T und G↔C.`};
+        }
+        return genFromPool("bio", lvl);
+      }
+      function genPhys(lvl) {
+        if (lvl==="L1" || lvl==="L2") {
+          if (Math.random()<0.5) { const s=randInt(2,12)*10, t=randInt(2,8), v=Number((s/t).toFixed(1)); return {en:`s = ${s} m, t = ${t} s. Geschwindigkeit v = ?`,de:`${v} m/s`,opts:makeNumOpts(v,6," m/s"),ex:`v = s/t = ${v} m/s.`}; }
+          const r=randInt(2,12), i=randInt(2,8), u=r*i; return {en:`Ohmsches Gesetz: R = ${r} Ω, I = ${i} A. U = ?`,de:`${u} V`,opts:makeNumOpts(u,14," V"),ex:`U = R·I = ${u} V.`};
+        }
+        return genFromPool("phys", lvl);
+      }
+
+      /* ===========================================================
+         4. UI HELPERS & NAVIGATION
+         =========================================================== */
+      const getAllItems = () => [...CORE_ITEMS, ...state.customItems];
+      const getItemById = id => getAllItems().find(x => x.id === id);
+      function esc(s) { return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
+      function showToast(m) { const el=document.getElementById("toast"); el.textContent=m; el.classList.add("show"); clearTimeout(showToast._t); showToast._t=setTimeout(()=>el.classList.remove("show"),2600); }
+      function speak(text, lang="en-US", audioUrl=null) {
+        if (audioUrl) { try { new Audio(audioUrl.startsWith("//")?"https:"+audioUrl:audioUrl).play().catch(()=>speakTTS(text,lang)); return; } catch {} }
+        speakTTS(text, lang);
+      }
+      function speakTTS(text, lang="en-US") {
+        if (!("speechSynthesis" in window)) return;
+        window.speechSynthesis.cancel();
+        const u=new SpeechSynthesisUtterance(text); u.lang=lang; u.rate=0.93;
+        const p=lang.slice(0,2).toLowerCase(), v=window.speechSynthesis.getVoices().find(x=>x.lang&&x.lang.toLowerCase().startsWith(p));
+        if (v) u.voice=v; window.speechSynthesis.speak(u);
+      }
+      function normalizeAns(s) { return String(s||"").toLowerCase().trim().replace(/[.,!?;:()"„“‚‘']/g,"").replace(/\s+/g," "); }
+      function stripPref(s) { return s.replace(/^to\s+/i,"").replace(/^(der|die|das|ein|eine|sich)\s+/i,"").trim(); }
+      function isTypedCorrect(input, expected) {
+        const u=normalizeAns(input); if(!u)return false; const us=stripPref(u), cands=expected.split(/[\/,|]/).map(normalizeAns).filter(Boolean);
+        cands.push(normalizeAns(expected)); return cands.some(c=>u===c||u===stripPref(c)||us===stripPref(c));
+      }
+      function launchConfetti() {
+        const cv=document.getElementById("confettiCanvas"); cv.width=window.innerWidth; cv.height=window.innerHeight;
+        const ctx=cv.getContext("2d"), cols=["#6366f1","#ec4899","#10b981","#f59e0b","#06b6d4"];
+        const parts=Array.from({length:60},()=>({x:Math.random()*cv.width,y:-10-Math.random()*70,vx:(Math.random()-.5)*5,vy:3+Math.random()*5,sz:5+Math.random()*5,col:cols[randInt(0,4)],rot:Math.random()*360}));
+        let f=0;
+        const tick=()=>{ ctx.clearRect(0,0,cv.width,cv.height); parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.rot+=5;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.fillStyle=p.col;ctx.fillRect(-p.sz/2,-p.sz/2,p.sz,p.sz*.6);ctx.restore();}); if(++f<85)requestAnimationFrame(tick); else ctx.clearRect(0,0,cv.width,cv.height); };
+        tick();
+      }
+      function applyTheme() {
+        const t = localStorage.getItem(THEME_KEY) || "light";
+        document.documentElement.setAttribute("data-theme", t);
+        document.getElementById("themeToggle").textContent = t === "dark" ? "☀️" : "🌙";
+      }
+      document.getElementById("themeToggle").addEventListener("click", () => {
+        const next = (localStorage.getItem(THEME_KEY) || "light") === "dark" ? "light" : "dark";
+        localStorage.setItem(THEME_KEY, next); applyTheme();
+      });
+
+      function updateHud() {
+        if (!currentUser) {
+          document.getElementById("hudUserBtn").textContent = "🔑 Anmelden";
+          return;
+        }
+        const lvl = Math.floor(state.xp / 150) + 1;
+        const ranks = ["Entdecker","Wort-Profi","Schul-Ass","Meister","Legende"];
+        document.getElementById("hudRankPill").textContent = `🏅 Lvl ${lvl} · ${ranks[Math.min(4, Math.floor((lvl-1)/2))]}`;
+        document.getElementById("hudStreakPill").textContent = `🔥 ${state.streak}`;
+        document.getElementById("hudXp").textContent = state.xp;
+        document.getElementById("hudUserBtn").textContent = `${currentUser.cloud?"☁️":"👤"} ${currentUser.username}`;
+      }
+
+      function switchView(name) {
+        if (!currentUser && name !== "auth") name = "auth";
+        document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+        const t = document.getElementById("view-" + name); if (t) t.classList.add("active");
+        document.querySelectorAll(".nav-btn").forEach(b => b.classList.toggle("active", b.dataset.view === name));
+        if (name === "course") renderCourseView();
+        if (name === "test") renderTestHome();
+        if (name === "dict") renderDictionaryView();
+        if (name === "custom") renderCustomView();
+        if (name === "gzlab") initGzCanvasOnce();
+      }
+      document.querySelectorAll(".nav-btn").forEach(b => b.addEventListener("click", () => switchView(b.dataset.view)));
+      document.getElementById("brandHomeBtn").addEventListener("click", () => switchView(currentUser ? "course" : "auth"));
+
+      function populateDropdowns() {
+        const opts = Object.values(SUBJECTS).map(s => `<option value="${s.id}">${s.icon} ${s.name}</option>`).join("");
+        document.getElementById("testSubjectSelect").innerHTML = `<option value="COMBO">🌟 Großer Schul-Check (Alle 10 Fächer)</option>` + opts;
+        document.getElementById("freeSubj").innerHTML = opts;
+        document.getElementById("dictSubjectFilter").innerHTML = `<option value="ALL">Alle Fächer</option>` + opts;
+        document.getElementById("newSubj").innerHTML = opts;
+      }
+
+      /* ===========================================================
+         5. SUBJECTS, COURSES & PLACEMENT TESTS
+         =========================================================== */
+      function renderCourseView() {
+        const all = getAllItems();
+        document.getElementById("subjectsGrid").innerHTML = Object.values(SUBJECTS).map(s => {
+          const items = all.filter(x => x.subj === s.id), m = items.filter(x => state.masteredIds.includes(x.id)).length;
+          return `<button class="subj-card ${state.activeSubject===s.id?"active":""}" style="--subj-accent:${s.color}" data-pick-subj="${s.id}"><div class="between"><span style="font-size:1.45rem;">${s.icon}</span><span class="badge">${m}/${items.length}</span></div><strong style="font-size:.96rem;">${s.name}</strong><span class="muted" style="font-size:.74rem;line-height:1.25;">${s.desc}</span></button>`;
+        }).join("");
+        document.querySelectorAll("[data-pick-subj]").forEach(b => b.addEventListener("click", () => { state.activeSubject=b.dataset.pickSubj; saveProgress(); renderCourseView(); }));
+
+        const subj = SUBJECTS[state.activeSubject] || SUBJECTS.en, lvls = [...subj.levels, "CUSTOM"];
+        let activeLvl = state.activeLevels[subj.id] || subj.levels[0];
+        if (!lvls.includes(activeLvl)) activeLvl = subj.levels[0];
+        state.activeLevels[subj.id] = activeLvl;
+
+        document.getElementById("courseLevelStrip").innerHTML = lvls.map(lvl => {
+          const items = all.filter(x => x.subj === subj.id && x.lvl === lvl), m = items.filter(x => state.masteredIds.includes(x.id)).length, isRec = state.placementLevels[subj.id] === lvl;
+          return `<button class="level-tile ${activeLvl===lvl?"active":""}" data-pick-lvl="${lvl}">${isRec?`<span class="rec-tag">Empfohlen</span>`:""}<span class="badge badge-${lvl}">${lvl==="CUSTOM"?"Custom":lvl}</span><div style="font-weight:800;font-size:.86rem;margin-top:5px;">${LEVEL_INFO[lvl].title.split("·")[1]?.trim()||"Custom"}</div><div class="muted" style="font-size:.74rem;">${m} / ${items.length} ✅</div></button>`;
+        }).join("");
+        document.querySelectorAll("[data-pick-lvl]").forEach(b => b.addEventListener("click", () => { state.activeLevels[subj.id]=b.dataset.pickLvl; saveProgress(); renderCourseView(); }));
+
+        const lvlItems = all.filter(x => x.subj === subj.id && x.lvl === activeLvl), lvlM = lvlItems.filter(x => state.masteredIds.includes(x.id)).length;
+        const pct = lvlItems.length ? Math.round((lvlM / lvlItems.length) * 100) : 0;
+        document.getElementById("activeLevelBadge").className = "badge badge-" + activeLvl;
+        document.getElementById("activeLevelBadge").textContent = `${subj.icon} ${subj.name} · ${activeLvl==="CUSTOM"?"Custom":activeLvl}`;
+        document.getElementById("activeLevelTitle").textContent = LEVEL_INFO[activeLvl].title;
+        document.getElementById("activeLevelDesc").textContent = LEVEL_INFO[activeLvl].desc;
+        document.getElementById("activeLevelRecBadge").style.display = state.placementLevels[subj.id]===activeLvl ? "inline-flex" : "none";
+        document.getElementById("activeLevelProgressText").textContent = `${lvlM} / ${lvlItems.length} gemeistert (${pct}%)`;
+        document.getElementById("activeLevelProgressFill").style.width = pct + "%";
+        document.getElementById("launchGeneratorFromCourseBtn").style.display = subj.hasGen ? "inline-flex" : "none";
+
+        const revItems = state.reviewIds.map(getItemById).filter(x => x && x.subj === subj.id);
+        const revBox = document.getElementById("reviewBoxCard");
+        if (revItems.length) { revBox.style.display="block"; document.getElementById("reviewCount").textContent=revItems.length; } else revBox.style.display="none";
+
+        const grid = document.getElementById("unitsGrid");
+        if (!lvlItems.length) {
+          grid.innerHTML = `<div class="card" style="grid-column:1/-1;"><h3>Noch keine Custom-Inhalte in ${subj.name}</h3><p class="muted">Nutze den <strong>🔍 Wort- &amp; Satz-Einschätzer</strong> oder <strong>➕ Custom</strong>.</p></div>`;
+          return;
+        }
+        const groups = {}; for (const it of lvlItems) (groups[it.cat||"Allgemein"] = groups[it.cat||"Allgemein"] || []).push(it);
+        grid.innerHTML = Object.entries(groups).map(([cat, items], idx) => {
+          const mc = items.filter(x => state.masteredIds.includes(x.id)).length;
+          return `
+            <div class="unit-card">
+              <div class="between"><span class="badge">Lektion ${idx+1} · ${items.length}</span><span style="font-size:.82rem;font-weight:800;color:var(--success);">${mc}/${items.length} ✅</span></div>
+              <div><h3>${esc(cat)}</h3><div class="progress-track" style="height:6px;margin-top:6px;"><div class="progress-fill" style="width:${Math.round((mc/items.length)*100)}%"></div></div></div>
+              <div class="row">
+                <button class="btn btn-primary btn-sm" data-u="${esc(cat)}" data-m="flashcard">🃏 Karten</button>
+                <button class="btn btn-sm" data-u="${esc(cat)}" data-m="quiz">❓ Quiz</button>
+                <button class="btn btn-sm" data-u="${esc(cat)}" data-m="type">⌨️ Schreiben</button>
+                <button class="btn btn-sm" data-u="${esc(cat)}" data-m="match">🔗 Zuordnen</button>
+              </div>
+              <details>
+                <summary style="cursor:pointer;font-size:.82rem;font-weight:700;color:var(--text-muted);">Inhalte ansehen (${items.length})</summary>
+                <div class="unit-word-preview">${items.map(w=>`<div class="mini-word"><div><strong>${esc(w.en)}</strong> <span class="muted">— ${esc(w.de)}</span></div><button class="speaker-btn" data-sp="${esc(w.id)}">🔊</button></div>`).join("")}</div>
+              </details>
+            </div>`;
+        }).join("");
+        grid.querySelectorAll("[data-u]").forEach(b => b.addEventListener("click", () => {
+          const deck = getAllItems().filter(x => x.subj===subj.id && x.lvl===activeLvl && (x.cat||"Allgemein")===b.dataset.u);
+          startPractice({ title:`${subj.icon} ${subj.name} · ${b.dataset.u}`, items:deck, mode:b.dataset.m, subjLang:subj.lang, returnView:"course" });
+        }));
+        grid.querySelectorAll("[data-sp]").forEach(b => b.addEventListener("click", () => { const w=getItemById(b.dataset.sp); if(w) speak(w.en, SUBJECTS[w.subj].lang, w.audio); }));
+      }
+
+      document.getElementById("trainWholeLevelQuizBtn").addEventListener("click", () => { const s=SUBJECTS[state.activeSubject], l=state.activeLevels[s.id]; startPractice({ title:`${s.icon} ${s.name} (${l}) · Quiz`, items:shuffle(getAllItems().filter(x=>x.subj===s.id&&x.lvl===l)).slice(0,20), mode:"quiz", subjLang:s.lang, returnView:"course" }); });
+      document.getElementById("trainWholeLevelMatchBtn").addEventListener("click", () => { const s=SUBJECTS[state.activeSubject], l=state.activeLevels[s.id]; startPractice({ title:`${s.icon} ${s.name} (${l}) · Zuordnung`, items:shuffle(getAllItems().filter(x=>x.subj===s.id&&x.lvl===l)).slice(0,16), mode:"match", subjLang:s.lang, returnView:"course" }); });
+      document.getElementById("trainWholeLevelCardsBtn").addEventListener("click", () => { const s=SUBJECTS[state.activeSubject], l=state.activeLevels[s.id]; startPractice({ title:`${s.icon} ${s.name} (${l}) · Lernkarten`, items:shuffle(getAllItems().filter(x=>x.subj===s.id&&x.lvl===l)).slice(0,20), mode:"flashcard", subjLang:s.lang, returnView:"course" }); });
+      document.getElementById("launchGeneratorFromCourseBtn").addEventListener("click", () => { const s=SUBJECTS[state.activeSubject], l=state.activeLevels[s.id], gl=l.startsWith("L")?l:"L2"; startPractice({ title:`♾️ ${s.icon} ${s.name}-Generator (${gl})`, items:generateDynamicTasks(s.id,gl,12), mode:"quiz", subjLang:s.lang, returnView:"course" }); });
+      [["Cards","flashcard"],["Quiz","quiz"],["Type","type"]].forEach(([lbl, m]) => document.getElementById("practiceReview"+lbl+"Btn").addEventListener("click", () => { const s=SUBJECTS[state.activeSubject]; startPractice({ title:`🔁 Wiederholung ${s.name}`, items:state.reviewIds.map(getItemById).filter(x=>x&&x.subj===s.id), mode:m, subjLang:s.lang, returnView:"course" }); }));
+      document.getElementById("openSubjTestBtn").addEventListener("click", () => { document.getElementById("testSubjectSelect").value=state.activeSubject; switchView("test"); });
+      document.getElementById("openComboTestBtn").addEventListener("click", () => { document.getElementById("testSubjectSelect").value="COMBO"; switchView("test"); });
+
+      let testSession = null;
+      function renderTestHome() {
+        if (testSession && !testSession.finished) return;
+        document.getElementById("testIntro").style.display="flex"; document.getElementById("testRunner").style.display="none"; document.getElementById("testResult").style.display="none";
+        const entries = Object.entries(state.placementLevels), box = document.getElementById("placementSummaryCards");
+        if (entries.length) { box.style.display="flex"; document.getElementById("placementBadgesRow").innerHTML = entries.map(([sid, lvl]) => SUBJECTS[sid]?`<span class="badge badge-${lvl}">${SUBJECTS[sid].icon} ${SUBJECTS[sid].name}: <strong>${lvl}</strong></span>`:"").join(""); }
+        else box.style.display="none";
+      }
+      function buildTestQ(it) {
+        const same = CORE_ITEMS.filter(x => x.subj===it.subj && x.id!==it.id), sameL = same.filter(x => x.lvl===it.lvl);
+        const dist = shuffle(sameL.length>=3?sameL:same).slice(0,3).map(d => d.de);
+        return { subj:it.subj, lvl:it.lvl, hint:`${SUBJECTS[it.subj].icon} ${SUBJECTS[it.subj].name} · ${it.cat}`, q:it.subj==="en"?`Was bedeutet „${it.en}“?`:it.en, a:it.de, opts:shuffle([it.de,...dist]), svg:it.svg||"" };
+      }
+      function startPlacementTest() {
+        const sel = document.getElementById("testSubjectSelect").value, qs = [];
+        if (sel==="COMBO") { for(const s of Object.values(SUBJECTS)){ const p=shuffle(CORE_ITEMS.filter(x=>x.subj===s.id&&x.lvl===s.levels[Math.min(1,s.levels.length-1)])); if(p[0]) qs.push(buildTestQ(p[0])); } }
+        else { for(const lvl of SUBJECTS[sel].levels) shuffle(CORE_ITEMS.filter(x=>x.subj===sel&&x.lvl===lvl)).slice(0,2).forEach(it=>qs.push(buildTestQ(it))); }
+        testSession={ mode:sel, questions:qs, index:0, scores:{}, totalCorrect:0, answered:false, finished:false };
+        document.getElementById("testIntro").style.display="none"; document.getElementById("testResult").style.display="none"; document.getElementById("testRunner").style.display="flex"; document.getElementById("testTotalNum").textContent=qs.length;
+        renderPlacementQ();
+      }
+      function renderPlacementQ() {
+        const q = testSession.questions[testSession.index]; testSession.answered = false;
+        document.getElementById("testLvlBadge").className="badge badge-"+q.lvl; document.getElementById("testLvlBadge").textContent=`${SUBJECTS[q.subj].icon} ${q.lvl}`;
+        document.getElementById("testStepNum").textContent=testSession.index+1; document.getElementById("testProgressFill").style.width=((testSession.index/testSession.questions.length)*100)+"%";
+        document.getElementById("testCategoryHint").textContent=q.hint; document.getElementById("testSvgHolder").innerHTML=renderGzSvg(q.svg);
+        document.getElementById("testPrompt").textContent=q.q; document.getElementById("testFeedback").innerHTML="";
+        const c=document.getElementById("testOptions");
+        c.innerHTML=q.opts.map((o,i)=>`<button class="option-btn" data-oi="${i}"><span class="option-key">${i+1}</span><span>${esc(o)}</span></button>`).join("");
+        c.querySelectorAll(".option-btn").forEach(b=>b.addEventListener("click",()=>handlePlacementAns(Number(b.dataset.oi))));
+      }
+      function handlePlacementAns(idx) {
+        if (testSession.answered) return; testSession.answered = true;
+        const q=testSession.questions[testSession.index], ok=q.opts[idx]===q.a, key=testSession.mode==="COMBO"?q.subj:q.lvl;
+        testSession.scores[key]=(testSession.scores[key]||0)+(ok?1:0); if(ok)testSession.totalCorrect++;
+        document.querySelectorAll("#testOptions .option-btn").forEach((b,i)=>{b.disabled=true; if(q.opts[i]===q.a)b.classList.add("correct"); else if(i===idx&&!ok)b.classList.add("wrong");});
+        document.getElementById("testFeedback").innerHTML=`<div class="feedback-banner ${ok?"ok":"err"}"><span>${ok?"✅ Richtig!":`❌ Richtig: „${esc(q.a)}“`}</span><button class="btn btn-primary btn-sm" id="nextTQ">${testSession.index===testSession.questions.length-1?"Ergebnis →":"Weiter →"}</button></div>`;
+        document.getElementById("nextTQ").addEventListener("click",()=>{testSession.index++; testSession.index>=testSession.questions.length?finishPlacement():renderPlacementQ();});
+      }
+      function finishPlacement() {
+        testSession.finished=true; state.xp+=testSession.totalCorrect*15+25;
+        document.getElementById("testRunner").style.display="none"; document.getElementById("testResult").style.display="flex";
+        document.getElementById("resultTotalScore").textContent=`${testSession.totalCorrect} / ${testSession.questions.length}`;
+        const bars=document.getElementById("resultBars");
+        if (testSession.mode==="COMBO") {
+          for(const s of Object.values(SUBJECTS)){ const rec=(testSession.scores[s.id]||0)>=1?s.levels[Math.min(2,s.levels.length-1)]:s.levels[0]; state.placementLevels[s.id]=rec; state.activeLevels[s.id]=rec; }
+          document.getElementById("resultHeadline").textContent="Schul-Check fertig!"; document.getElementById("resultDescription").textContent="Alle 10 Fächer wurden passend zu deinem Ergebnis eingestuft.";
+          bars.innerHTML=Object.values(SUBJECTS).map(s=>`<div class="score-col"><div style="font-size:1.1rem;">${s.icon}</div><div style="font-size:.76rem;font-weight:700;">${s.name}</div><div style="font-weight:800;margin-top:3px;">${(testSession.scores[s.id]||0)>=1?"✅ Top":"📚 Basis"}</div></div>`).join("");
+        } else {
+          const s=SUBJECTS[testSession.mode]; let ri=0;
+          for(let i=0;i<s.levels.length;i++){const sc=testSession.scores[s.levels[i]]||0,nsc=i+1<s.levels.length?(testSession.scores[s.levels[i+1]]||0):0; if(sc===2||(sc===1&&nsc>=1&&i<s.levels.length-2))ri=Math.min(i+1,s.levels.length-1); else break;}
+          const rec=s.levels[ri]; state.placementLevels[s.id]=rec; state.activeSubject=s.id; state.activeLevels[s.id]=rec;
+          document.getElementById("resultHeadline").textContent=`${s.icon} ${s.name}: Empfohlen ist ${rec}`; document.getElementById("resultDescription").textContent=`${LEVEL_INFO[rec].title} — ${LEVEL_INFO[rec].desc}`;
+          bars.innerHTML=s.levels.map(l=>{const v=testSession.scores[l]||0; return `<div class="score-col"><span class="badge badge-${l}">${l}</span><div style="font-weight:800;margin:5px 0;">${v}/2</div><div class="progress-track" style="height:6px;"><div class="progress-fill" style="width:${(v/2)*100}%"></div></div></div>`;}).join("");
+        }
+        saveProgress(); launchConfetti();
+      }
+      document.getElementById("startPlacementBtn").addEventListener("click", startPlacementTest);
+      document.getElementById("retakeTestBtn").addEventListener("click", startPlacementTest);
+      document.getElementById("cancelTestBtn").addEventListener("click", () => { testSession=null; renderTestHome(); });
+      document.getElementById("skipToCourseBtn").addEventListener("click", () => switchView("course"));
+      document.getElementById("acceptCourseBtn").addEventListener("click", () => switchView("course"));
+
+      /* ===========================================================
+         6. PRACTICE ENGINE & GENERATORS
+         =========================================================== */
+      let practice = null;
+      function startPractice({ title, items, mode, subjLang="en-US", returnView="course" }) {
+        if (!items || !items.length) return showToast("Keine Inhalte gefunden.");
+        practice = { title, queue:shuffle(items), completed:0, correct:0, mistakes:[], xpEarned:0, mode, dir:"en2de", flipped:false, answered:false, subjLang, returnView, currentOpts:[], matchState:null };
+        document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+        document.getElementById("view-practice").classList.add("active");
+        document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+        document.getElementById("practiceTitle").textContent = title;
+        document.getElementById("practiceSubtitle").textContent = mode==="flashcard"?"Lernkarten (Leertaste)":mode==="quiz"?"Quiz (1–4)":mode==="match"?"Paar-Zuordnung":"Schreibtraining";
+        renderPracticeStep();
+      }
+      function onCorrectAnswer(w, baseXp) {
+        if (!w.isGenerated) { if (!state.masteredIds.includes(w.id)) state.masteredIds.push(w.id); state.reviewIds = state.reviewIds.filter(x => x !== w.id); }
+        state.streak++; const bonus = state.streak >= 3 ? 5 : 0;
+        practice.correct++; practice.xpEarned += baseXp + bonus; state.xp += baseXp + bonus;
+      }
+      function onWrongAnswer(w) {
+        state.streak = 0; if (!w.isGenerated && !state.reviewIds.includes(w.id)) state.reviewIds.push(w.id);
+        if (!practice.mistakes.some(m => m.id === w.id)) practice.mistakes.push(w);
+      }
+      function renderPracticeStep() {
+        document.getElementById("dirLabel").textContent = practice.dir==="en2de"?"Frage → Antwort":"Antwort → Frage";
+        if (!practice.queue.length) return renderPracticeSummary();
+        const total = practice.completed + practice.queue.length;
+        document.getElementById("practiceCounter").textContent = `${practice.completed+1} / ${total}`;
+        document.getElementById("practiceProgressFill").style.width = Math.round((practice.completed/total)*100) + "%";
+        practice.flipped = false; practice.answered = false;
+        if (practice.mode === "match") return renderMatchRound();
+        const w = practice.queue[0];
+        if (practice.mode === "flashcard") renderFlashcard(w);
+        else if (practice.mode === "quiz") renderQuizQ(w);
+        else renderTypeQ(w);
+      }
+      function renderFlashcard(w) {
+        const q=practice.dir==="en2de"?w.en:w.de, a=practice.dir==="en2de"?w.de:w.en, lang=(SUBJECTS[w.subj]||SUBJECTS.en).lang;
+        document.getElementById("practiceStage").innerHTML = `
+          <div class="stack">
+            <div class="flashcard-wrap"><div class="flashcard" id="flashcardEl"><div class="flashcard-inner">
+              <div class="flashcard-face"><span class="badge badge-${w.lvl}">${w.lvl} · ${esc(w.cat)}</span>${renderGzSvg(w.svg)}<div class="flash-word">${esc(q)}</div><button class="speaker-btn" id="fcSpkF">🔊 Vorlesen</button><p class="muted" style="font-size:.82rem;">Klicken / Leertaste zum Drehen</p></div>
+              <div class="flashcard-face flashcard-back"><span class="badge badge-${w.lvl}">Lösung</span><div class="flash-word">${esc(a)}</div>${w.ex?`<p class="muted" style="max-width:460px;font-style:italic;">„${esc(w.ex)}“</p>`:""}<button class="speaker-btn" id="fcSpkB">🔊 Vorlesen</button></div>
+            </div></div></div>
+            <div class="row" style="justify-content:center;"><button class="btn btn-warning btn-lg" id="fcAgainBtn">🔁 Nochmal</button><button class="btn btn-success btn-lg" id="fcKnowBtn">✅ Kann ich! (+10 XP)</button></div>
+          </div>`;
+        const fc=document.getElementById("flashcardEl");
+        fc.addEventListener("click",()=>{practice.flipped=!practice.flipped;fc.classList.toggle("flipped",practice.flipped);});
+        document.getElementById("fcSpkF").addEventListener("click",e=>{e.stopPropagation();speak(q,practice.dir==="en2de"?lang:"de-DE",w.audio);});
+        document.getElementById("fcSpkB").addEventListener("click",e=>{e.stopPropagation();speak(w.ex?`${a}. ${w.ex}`:a,practice.dir==="en2de"?"de-DE":lang);});
+        document.getElementById("fcAgainBtn").addEventListener("click",()=>{const c=practice.queue.shift();onWrongAnswer(c);practice.queue.push(c);saveProgress();renderPracticeStep();});
+        document.getElementById("fcKnowBtn").addEventListener("click",()=>{const c=practice.queue.shift();onCorrectAnswer(c,10);practice.completed++;saveProgress();renderPracticeStep();});
+      }
+      function renderQuizQ(w) {
+        let opts;
+        if (w.opts && practice.dir==="en2de") opts=w.opts.map(t=>({text:t,isCorrect:t===w.de}));
+        else { const p=getAllItems().filter(x=>x.id!==w.id&&x.subj===w.subj), d=shuffle(p.length>=3?p:getAllItems().filter(x=>x.id!==w.id)).slice(0,3), ans=practice.dir==="en2de"?w.de:w.en; opts=shuffle([{text:ans,isCorrect:true},...d.map(x=>({text:practice.dir==="en2de"?x.de:x.en,isCorrect:false}))]); }
+        practice.currentOpts=opts; const prompt=practice.dir==="en2de"?w.en:w.de, lang=(SUBJECTS[w.subj]||SUBJECTS.en).lang;
+        document.getElementById("practiceStage").innerHTML = `<div class="card stack"><div class="between"><span class="badge badge-${w.lvl}">${w.lvl} · ${esc(w.cat)}</span><button class="speaker-btn" id="qSpk">🔊 Vorlesen</button></div>${renderGzSvg(w.svg)}<h1>${esc(prompt)}</h1><div class="options-grid" id="qOpts">${opts.map((o,i)=>`<button class="option-btn" data-qi="${i}"><span class="option-key">${i+1}</span><span>${esc(o.text)}</span></button>`).join("")}</div><div id="qFb"></div></div>`;
+        document.getElementById("qSpk").addEventListener("click",()=>speak(prompt,practice.dir==="en2de"?lang:"de-DE",w.audio));
+        document.querySelectorAll("#qOpts .option-btn").forEach(b=>b.addEventListener("click",()=>handleQuizChoice(Number(b.dataset.qi))));
+      }
+      function handleQuizChoice(idx) {
+        if (practice.answered) return; practice.answered=true; const w=practice.queue[0], ok=practice.currentOpts[idx].isCorrect;
+        document.querySelectorAll("#qOpts .option-btn").forEach((b,i)=>{b.disabled=true;if(practice.currentOpts[i].isCorrect)b.classList.add("correct");else if(i===idx&&!ok)b.classList.add("wrong");});
+        if(ok)onCorrectAnswer(w,15); else onWrongAnswer(w); saveProgress();
+        document.getElementById("qFb").innerHTML=`<div class="feedback-banner ${ok?"ok":"err"}"><div><div>${ok?`✅ Richtig! (+15 XP${state.streak>=3?" 🔥":""})`:`❌ Lösung: „${esc(practice.dir==="en2de"?w.de:w.en)}“`}</div>${w.ex?`<div style="font-size:.84rem;font-weight:500;margin-top:3px;">${esc(w.ex)}</div>`:""}</div><button class="btn btn-primary btn-sm" id="qNext">Weiter →</button></div>`;
+        document.getElementById("qNext").addEventListener("click",()=>{practice.queue.shift();practice.completed++;renderPracticeStep();});
+      }
+      function renderTypeQ(w) {
+        const prompt=practice.dir==="en2de"?w.en:w.de, expected=practice.dir==="en2de"?w.de:w.en, lang=(SUBJECTS[w.subj]||SUBJECTS.en).lang;
+        document.getElementById("practiceStage").innerHTML = `<div class="card stack"><div class="between"><span class="badge badge-${w.lvl}">${w.lvl} · ${esc(w.cat)}</span><button class="speaker-btn" id="tSpk">🔊 Vorlesen</button></div>${renderGzSvg(w.svg)}<h1>${esc(prompt)}</h1><form id="tForm" class="stack"><input type="text" id="tInp" autocomplete="off" placeholder="Antwort eingeben..." /><div class="row"><button type="submit" class="btn btn-primary">Prüfen</button><button type="button" class="btn" id="tHint">💡 Tipp</button></div></form><div id="tFb"></div></div>`;
+        const inp=document.getElementById("tInp"); setTimeout(()=>inp.focus(),40);
+        document.getElementById("tSpk").addEventListener("click",()=>speak(prompt,practice.dir==="en2de"?lang:"de-DE",w.audio));
+        document.getElementById("tHint").addEventListener("click",()=>{const c=stripPref(expected.split(/[\/,|]/)[0].trim());showToast(`Beginnt mit „${c.slice(0,2)}...“`);inp.focus();});
+        document.getElementById("tForm").addEventListener("submit",e=>{
+          e.preventDefault(); if(practice.answered){practice.queue.shift();practice.completed++;renderPracticeStep();return;}
+          practice.answered=true; const ok=isTypedCorrect(inp.value,expected); inp.disabled=true;
+          if(ok)onCorrectAnswer(w,20); else onWrongAnswer(w); saveProgress();
+          document.getElementById("tFb").innerHTML=`<div class="feedback-banner ${ok?"ok":"err"}"><div><div>${ok?`✅ Perfekt! (+20 XP) — ${esc(expected)}`:`❌ Lösung: „${esc(expected)}“`}</div>${w.ex?`<div style="font-size:.84rem;font-weight:500;margin-top:3px;">${esc(w.ex)}</div>`:""}</div><div class="row">${!ok?`<button type="button" class="btn btn-sm" id="ovOk">Als richtig werten</button>`:""}<button type="button" class="btn btn-primary btn-sm" id="tNext">Weiter →</button></div></div>`;
+          const ov=document.getElementById("ovOk"); if(ov)ov.addEventListener("click",()=>{onCorrectAnswer(w,20);practice.mistakes=practice.mistakes.filter(m=>m.id!==w.id);saveProgress();practice.queue.shift();practice.completed++;renderPracticeStep();});
+          document.getElementById("tNext").addEventListener("click",()=>{practice.queue.shift();practice.completed++;renderPracticeStep();});
+        });
+      }
+      function renderMatchRound() {
+        const batch=practice.queue.slice(0,4), left=shuffle(batch.map(w=>({id:w.id,text:practice.dir==="en2de"?w.en:w.de}))), right=shuffle(batch.map(w=>({id:w.id,text:practice.dir==="en2de"?w.de:w.en})));
+        practice.matchState={batch,selL:null,selR:null,matched:new Set()};
+        document.getElementById("practiceStage").innerHTML=`<div class="card stack"><h3>🔗 Finde die ${batch.length} Paare:</h3><div class="match-grid"><div class="match-col">${left.map(x=>`<button class="match-btn" data-ml="${esc(x.id)}">${esc(x.text)}</button>`).join("")}</div><div class="match-col">${right.map(x=>`<button class="match-btn" data-mr="${esc(x.id)}">${esc(x.text)}</button>`).join("")}</div></div></div>`;
+        const chk=()=>{
+          const ms=practice.matchState; if(!ms.selL||!ms.selR)return;
+          const bL=document.querySelector(`[data-ml="${CSS.escape(ms.selL)}"]`), bR=document.querySelector(`[data-mr="${CSS.escape(ms.selR)}"]`);
+          if(ms.selL===ms.selR){
+            ms.matched.add(ms.selL); const it=ms.batch.find(x=>x.id===ms.selL); if(it)onCorrectAnswer(it,8);
+            bL.classList.remove("selected");bR.classList.remove("selected");bL.classList.add("matched");bR.classList.add("matched");bL.disabled=true;bR.disabled=true;ms.selL=null;ms.selR=null;saveProgress();
+            if(ms.matched.size===ms.batch.length)setTimeout(()=>{practice.queue.splice(0,ms.batch.length);practice.completed+=ms.batch.length;renderPracticeStep();},340);
+          } else {
+            state.streak=0; saveProgress(); bL.classList.add("err"); bR.classList.add("err");
+            setTimeout(()=>{bL.classList.remove("err","selected");bR.classList.remove("err","selected");ms.selL=null;ms.selR=null;},380);
+          }
+        };
+        document.querySelectorAll("[data-ml]").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll("[data-ml]").forEach(x=>x.classList.remove("selected"));b.classList.add("selected");practice.matchState.selL=b.dataset.ml;chk();}));
+        document.querySelectorAll("[data-mr]").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll("[data-mr]").forEach(x=>x.classList.remove("selected"));b.classList.add("selected");practice.matchState.selR=b.dataset.mr;chk();}));
+      }
+      function renderPracticeSummary() {
+        document.getElementById("practiceCounter").textContent="Fertig!"; document.getElementById("practiceProgressFill").style.width="100%";
+        const acc=practice.completed?Math.round((practice.correct/practice.completed)*100):100; if(acc>=70)launchConfetti();
+        document.getElementById("practiceStage").innerHTML=`<div class="card stack" style="text-align:center;align-items:center;padding:30px 20px;"><div style="font-size:3rem;">🏆</div><h1>Stark gemacht!</h1><p class="muted">${esc(practice.title)}</p><div class="row" style="justify-content:center;"><span class="pill">🎯 Genauigkeit: ${acc}%</span><span class="pill">⚡ +${practice.xpEarned} XP</span><span class="pill">✅ ${practice.completed} erledigt</span></div><div class="row" style="justify-content:center;">${practice.mistakes.length?`<button class="btn btn-warning btn-lg" id="retryM">🔁 ${practice.mistakes.length} Fehler wiederholen</button>`:""}<button class="btn btn-primary btn-lg" id="sumBack">Zurück</button></div></div>`;
+        const r=document.getElementById("retryM"); if(r)r.addEventListener("click",()=>startPractice({title:"🔁 Fehler-Wiederholung",items:practice.mistakes,mode:practice.mode,subjLang:practice.subjLang,returnView:practice.returnView}));
+        document.getElementById("sumBack").addEventListener("click",()=>{const b=practice.returnView;practice=null;switchView(b);});
+      }
+      document.getElementById("exitPracticeBtn").addEventListener("click",()=>{const b=practice?practice.returnView:"course";practice=null;switchView(b);});
+      document.getElementById("toggleDirBtn").addEventListener("click",()=>{if(!practice)return;practice.dir=practice.dir==="en2de"?"de2en":"en2de";renderPracticeStep();});
+      document.addEventListener("keydown",e=>{
+        const inP=document.getElementById("view-practice").classList.contains("active"), inT=document.getElementById("view-test").classList.contains("active")&&document.getElementById("testRunner").style.display!=="none";
+        if(inT&&testSession&&["1","2","3","4"].includes(e.key)&&!testSession.answered){const i=Number(e.key)-1;if(i<testSession.questions[testSession.index].opts.length)handlePlacementAns(i);}
+        if(inP&&practice&&practice.queue.length){
+          if(practice.mode==="flashcard"&&e.code==="Space"){e.preventDefault();const fc=document.getElementById("flashcardEl");if(fc){practice.flipped=!practice.flipped;fc.classList.toggle("flipped",practice.flipped);}}
+          if(practice.mode==="quiz"&&["1","2","3","4"].includes(e.key)&&!practice.answered){const i=Number(e.key)-1;if(i<practice.currentOpts.length)handleQuizChoice(i);}
+          if(practice.mode==="quiz"&&e.key==="Enter"&&practice.answered){const n=document.getElementById("qNext");if(n)n.click();}
+        }
+      });
+
+      document.getElementById("startFreeSessionBtn").addEventListener("click",()=>{
+        const sid=document.getElementById("freeSubj").value,flt=document.getElementById("freeLvl").value,mode=document.getElementById("freeMode").value,cnt=Number(document.getElementById("freeCount").value);
+        let pool=getAllItems().filter(x=>x.subj===sid);
+        if(flt==="ACTIVE")pool=pool.filter(x=>x.lvl===(state.activeLevels[sid]||SUBJECTS[sid].levels[0]));
+        else if(flt==="CUSTOM")pool=pool.filter(x=>x.isCustom);
+        else if(flt==="REVIEW")pool=state.reviewIds.map(getItemById).filter(x=>x&&x.subj===sid);
+        startPractice({title:`🏋️ ${SUBJECTS[sid].icon} ${SUBJECTS[sid].name}`,items:shuffle(pool).slice(0,cnt),mode,subjLang:SUBJECTS[sid].lang,returnView:"free"});
+      });
+      document.getElementById("startGeneratorBtn").addEventListener("click",()=>{
+        const sid=document.getElementById("genSubject").value,lvl=document.getElementById("genLevel").value,mode=document.getElementById("genMode").value;
+        startPractice({title:`♾️ ${SUBJECTS[sid].icon} ${SUBJECTS[sid].name}-Generator (${lvl})`,items:generateDynamicTasks(sid,lvl,mode==="quiz"?12:10),mode,subjLang:SUBJECTS[sid].lang,returnView:"free"});
+      });
+
+      /* ===========================================================
+         7. GZ DRAWING BOARD
+         =========================================================== */
+      const GZ_TASKS = [
+        { title:"Aufgabe 1", desc:"Zeichne eine waagrechte Volllinie der Länge 4,0 cm (8 Kästchen)!", check: s => s.some(x => x.tool==="line" && Math.abs(x.cm-4.0)<=0.25 && Math.abs(x.y1-x.y2)<5) },
+        { title:"Aufgabe 2", desc:"Zeichne einen rechten Winkel (90°) aus zwei verbundenen Volllinien!", check: s => { const ls=s.filter(x=>x.tool!=="circle"); for(let i=0;i<ls.length;i++)for(let j=i+1;j<ls.length;j++){if(Math.abs((Math.abs(ls[i].deg-ls[j].deg)%180)-90)<=3)return true;} return false; } },
+        { title:"Aufgabe 3", desc:"Zeichne mit dem Zirkel einen Kreis mit Radius r = 3,0 cm!", check: s => s.some(x => x.tool==="circle" && Math.abs(x.cm-3.0)<=0.25) },
+        { title:"Aufgabe 4", desc:"Zeichne zwei parallele Strecken mit demselben Winkel!", check: s => { const ls=s.filter(x=>x.tool!=="circle"&&x.cm>=1.5); for(let i=0;i<ls.length;i++)for(let j=i+1;j<ls.length;j++){if(Math.abs(ls[i].deg-ls[j].deg)<=3&&(ls[i].y1!==ls[j].y1||ls[i].x1!==ls[j].x1))return true;} return false; } },
+        { title:"Aufgabe 5", desc:"Zeichne eine Strichlinie (verdeckte Kante) im 45°-Schrägrisswinkel!", check: s => s.some(x => x.tool==="dash" && (Math.abs(x.deg-45)<=5 || Math.abs(x.deg-135)<=5)) }
+      ];
+      let gzTaskIdx=0, gzTool="line", gzShapes=[], gzDrawing=null, gzInited=false;
+      function initGzCanvasOnce() {
+        if (gzInited) { window.redrawGz(); return; }
+        gzInited = true;
+        const cv=document.getElementById("gzCanvas"), ctx=cv.getContext("2d"), G=20;
+        const snap=v=>Math.round(v/G)*G, pt=e=>{const r=cv.getBoundingClientRect();return{x:snap((e.clientX-r.left)*(cv.width/r.width)),y:snap((e.clientY-r.top)*(cv.height/r.height))};};
+        window.redrawGz = () => {
+          ctx.fillStyle="#fff";ctx.fillRect(0,0,cv.width,cv.height);
+          for(let x=0;x<=cv.width;x+=G){ctx.beginPath();ctx.strokeStyle=x%40===0?"#cbd5e1":"#f1f5f9";ctx.lineWidth=x%40===0?1.2:.8;ctx.moveTo(x,0);ctx.lineTo(x,cv.height);ctx.stroke();}
+          for(let y=0;y<=cv.height;y+=G){ctx.beginPath();ctx.strokeStyle=y%40===0?"#cbd5e1":"#f1f5f9";ctx.lineWidth=y%40===0?1.2:.8;ctx.moveTo(0,y);ctx.lineTo(cv.width,y);ctx.stroke();}
+          const draw=(sh,pv)=>{ctx.save();ctx.strokeStyle=pv?"#6366f1":(sh.tool==="axis"?"#ef4444":"#0f172a");ctx.lineWidth=sh.tool==="line"?3:2;if(sh.tool==="dash")ctx.setLineDash([10,6]);else if(sh.tool==="axis")ctx.setLineDash([16,5,3,5]);ctx.beginPath();if(sh.tool==="circle"){ctx.arc(sh.x1,sh.y1,Math.hypot(sh.x2-sh.x1,sh.y2-sh.y1),0,Math.PI*2);ctx.stroke();}else{ctx.moveTo(sh.x1,sh.y1);ctx.lineTo(sh.x2,sh.y2);ctx.stroke();}ctx.restore();};
+          gzShapes.forEach(s=>draw(s,false)); if(gzDrawing)draw(gzDrawing,true);
+        };
+        cv.addEventListener("pointerdown",e=>{const p=pt(e);gzDrawing={tool:gzTool,x1:p.x,y1:p.y,x2:p.x,y2:p.y,cm:0,deg:0};cv.setPointerCapture(e.pointerId);window.redrawGz();});
+        cv.addEventListener("pointermove",e=>{if(!gzDrawing)return;const p=pt(e);gzDrawing.x2=p.x;gzDrawing.y2=p.y;const dx=p.x-gzDrawing.x1,dy=gzDrawing.y1-p.y;gzDrawing.cm=Number((Math.hypot(dx,dy)/40).toFixed(2));let deg=Math.round(Math.atan2(dy,dx)*180/Math.PI);if(deg<0)deg+=360;gzDrawing.deg=deg;document.getElementById("gzReadout").textContent=gzTool==="circle"?`Radius r = ${gzDrawing.cm} cm`:`Länge = ${gzDrawing.cm} cm · α = ${deg}°`;window.redrawGz();});
+        cv.addEventListener("pointerup",()=>{if(gzDrawing&&gzDrawing.cm>0)gzShapes.push(gzDrawing);gzDrawing=null;window.redrawGz();});
+        window.redrawGz();
+      }
+      document.querySelectorAll("[data-gztool]").forEach(b=>b.addEventListener("click",()=>{gzTool=b.dataset.gztool;document.querySelectorAll("[data-gztool]").forEach(x=>x.classList.toggle("btn-primary",x.dataset.gztool===gzTool));}));
+      document.getElementById("gzUndoBtn").addEventListener("click",()=>{gzShapes.pop();if(window.redrawGz)window.redrawGz();});
+      document.getElementById("gzClearBtn").addEventListener("click",()=>{gzShapes=[];if(window.redrawGz)window.redrawGz();});
+      document.getElementById("gzNextTaskBtn").addEventListener("click",()=>{gzTaskIdx=(gzTaskIdx+1)%GZ_TASKS.length;document.getElementById("gzTaskTitle").textContent=GZ_TASKS[gzTaskIdx].title+":";document.getElementById("gzTaskDesc").textContent=GZ_TASKS[gzTaskIdx].desc;});
+      document.getElementById("gzCheckDrawBtn").addEventListener("click",()=>{if(GZ_TASKS[gzTaskIdx].check(gzShapes)){state.xp+=25;saveProgress();launchConfetti();showToast("✅ Perfekt konstruiert! (+25 XP)");}else showToast("Prüfe nochmal Länge, Winkel oder Linienart!");});
+
+      /* ===========================================================
+         8. DIRECT LIVE ONLINE DICTIONARY & WORD/SENTENCE EVALUATOR
+         =========================================================== */
+      async function fetchTO(url, ms = 8000) {
+        const c = new AbortController(), t = setTimeout(() => c.abort(), ms);
+        try { return await fetch(url, { signal: c.signal }); } finally { clearTimeout(t); }
+      }
+
+      function detectLanguage(text) {
+        const sel = document.getElementById("evalLang").value;
+        if (sel !== "auto") return sel;
+        if (/[äöüßÄÖÜ]/.test(text)) return "de";
+        const tokens = text.toLowerCase().match(/[a-z]+/g) || [];
+        const deM = new Set(["der","die","das","und","ist","ich","wir","nicht","ein","eine","mit","auf","für","von","zu","sind","war","haben","werden"]);
+        const enM = new Set(["the","is","are","and","you","we","they","this","that","for","with","have","from","to","in","of","was"]);
+        let ds=0, es=0; tokens.forEach(t => { if(deM.has(t))ds++; if(enM.has(t))es++; });
+        return ds > es ? "de" : "en";
+      }
+
+      function heuristicEstimate(tok, lang, datamuseFreq = null) {
+        const clean = tok.toLowerCase();
+        const curated = CORE_ITEMS.find(x => x.subj === lang && x.en.toLowerCase().replace(/^to\s+/,"") === clean);
+        if (curated) return { lvl: curated.lvl, score: {"A1":12,"A2":28,"B1":46,"B2":64,"C1":82,"C2":96,"L1":20,"L2":45,"L3":72,"L4":92}[curated.lvl]||45 };
+        if (lang === "en" && datamuseFreq !== null) {
+          if (datamuseFreq >= 80) return { lvl:"A1", score:15 };
+          if (datamuseFreq >= 25) return { lvl:"A2", score:30 };
+          if (datamuseFreq >= 7) return { lvl:"B1", score:48 };
+          if (datamuseFreq >= 1.8) return { lvl:"B2", score:66 };
+          if (datamuseFreq >= 0.35) return { lvl:"C1", score:82 };
+          return { lvl:"C2", score:94 };
+        }
+        let s = clean.length * 6;
+        if (/(tion|sion|ment|ness|ity|ous|ive|ance|ence|able|schaf|keit|heit|ung)$/.test(clean)) s += 20;
+        if (/[qxyz]/.test(clean)) s += 10;
+        s = Math.min(96, Math.max(12, s));
+        if (lang === "en") return { lvl: s<25?"A1":s<42?"A2":s<58?"B1":s<74?"B2":s<88?"C1":"C2", score:s };
+        return { lvl: s<32?"L1":s<56?"L2":s<78?"L3":"L4", score:s };
+      }
+
+      async function evaluateInputText() {
+        const text = document.getElementById("evalInput").value.trim();
+        if (!text) return showToast("Bitte ein Wort oder einen Satz eingeben.");
+        const box = document.getElementById("evalResultBox");
+        box.style.display = "block";
+        box.innerHTML = `<div class="online-box">⏳ Schätze ein &amp; suche live im Wörterbuch...</div>`;
+
+        const lang = detectLanguage(text);
+        const tokens = text.match(/[a-zA-ZäöüÄÖÜß'-]+/g) || [text];
+
+        // Parallel Live Checks: Translation + Word Frequencies / Spellcheck
+        let translation = "", phonetic = "", audioUrl = "", dictMeanings = "";
+        const freqMap = new Map();
+        const wikiExists = new Map();
+
+        try {
+          const tasks = [];
+          const pair = lang === "en" ? "en|de" : "de|en";
+          tasks.push(
+            fetchTO(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${pair}`, 7000)
+              .then(r => r.json()).then(d => { if (d?.responseData?.translatedText) translation = d.responseData.translatedText.trim(); }).catch(()=>{})
+          );
+
+          if (lang === "en") {
+            const unique = [...new Set(tokens.map(t => t.toLowerCase()))].slice(0, 8);
+            unique.forEach(w => {
+              tasks.push(
+                fetchTO(`https://api.datamuse.com/words?sp=${encodeURIComponent(w)}&md=f&max=1`, 5000)
+                  .then(r => r.json()).then(arr => {
+                    if (arr?.[0] && arr[0].word.toLowerCase() === w) {
+                      const fTag = (arr[0].tags||[]).find(t => t.startsWith("f:"));
+                      if (fTag) freqMap.set(w, parseFloat(fTag.slice(2)));
+                    }
+                  }).catch(()=>{})
+              );
+            });
+            if (tokens.length === 1) {
+              tasks.push(
+                fetchTO(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(tokens[0].toLowerCase())}`, 6000)
+                  .then(r => r.ok ? r.json() : null).then(arr => {
+                    if (arr?.[0]) {
+                      phonetic = arr[0].phonetic || (arr[0].phonetics||[]).find(p=>p.text)?.text || "";
+                      audioUrl = (arr[0].phonetics||[]).find(p=>p.audio)?.audio || "";
+                      dictMeanings = (arr[0].meanings||[]).slice(0,2).map(m => `<div><span class="badge">${esc(m.partOfSpeech)}</span> <span style="font-size:.88rem;">${esc(m.definitions?.[0]?.definition||"")}</span></div>`).join("");
+                    }
+                  }).catch(()=>{})
+              );
+            }
+          } else {
+            // German Wiktionary existence check in ONE request for up to 25 words
+            const titles = [...new Set(tokens.slice(0, 25))].join("|");
+            tasks.push(
+              fetchTO(`https://de.wiktionary.org/w/api.php?action=query&titles=${encodeURIComponent(titles)}&format=json&origin=*`, 6000)
+                .then(r => r.json()).then(d => {
+                  const pages = d?.query?.pages || {};
+                  Object.values(pages).forEach(p => { if (p.title) wikiExists.set(p.title.toLowerCase(), !p.missing); });
+                }).catch(()=>{})
+            );
+          }
+          await Promise.allSettled(tasks);
+        } catch {}
+
+        const tokenAnalysis = tokens.map(tok => {
+          const clean = tok.toLowerCase();
+          const est = heuristicEstimate(tok, lang, freqMap.has(clean) ? freqMap.get(clean) : null);
+          let spelledOk = true;
+          if (lang === "en" && freqMap.size > 0 && tokens.length <= 8) spelledOk = freqMap.has(clean);
+          else if (lang === "de" && wikiExists.has(clean)) spelledOk = wikiExists.get(clean);
+          return { tok, ...est, spelledOk };
+        });
+
+        const avg = Math.round(tokenAnalysis.reduce((a,b)=>a+b.score,0)/tokenAnalysis.length);
+        const max = Math.max(...tokenAnalysis.map(t=>t.score));
+        const finalScore = Math.min(100, Math.round(avg*0.6 + max*0.4 + Math.min(12, tokens.length)));
+        const overallLvl = lang === "en"
+          ? (finalScore<26?"A1":finalScore<44?"A2":finalScore<60?"B1":finalScore<76?"B2":finalScore<89?"C1":"C2")
+          : (finalScore<34?"L1":finalScore<56?"L2":finalScore<78?"L3":"L4");
+
+        box.innerHTML = `
+          <div class="online-box stack">
+            <div class="between">
+              <div class="row">
+                <span class="badge badge-${overallLvl}">Niveau: ${overallLvl}</span>
+                <span class="badge">${lang==="en"?"🇬🇧 Englisch":"🇩🇪 Deutsch"} · ${tokens.length} ${tokens.length===1?"Wort":"Wörter"}</span>
+                <span class="badge">Schwierigkeit: ${finalScore}/100</span>
+                ${phonetic ? `<span class="muted">${esc(phonetic)}</span>` : ""}
+              </div>
+              <button class="speaker-btn" id="evalSpeakBtn">🔊 Anhören</button>
+            </div>
+            <div>
+              <strong>Wort-für-Wort-Analyse</strong> <span class="muted" style="font-size:.8rem;">(Klick auf ein Wort = anhören &amp; einzeln prüfen)</span>
+              <div class="word-chips">${tokenAnalysis.map(t=>`<button class="wchip badge-${t.lvl}" data-wc="${esc(t.tok)}">${esc(t.tok)} <small>(${t.lvl}${t.spelledOk?"":" ?"})</small></button>`).join("")}</div>
+            </div>
+            <div class="form-grid">
+              <div><label style="font-size:.8rem;font-weight:700;">Wort / Satz</label><input type="text" id="evalSaveF" value="${esc(text)}" /></div>
+              <div><label style="font-size:.8rem;font-weight:700;">Übersetzung / Bedeutung</label><input type="text" id="evalSaveB" value="${esc(translation)}" placeholder="Bedeutung..." /></div>
+            </div>
+            ${dictMeanings ? `<div class="stack" style="gap:4px;"><strong>Definition:</strong>${dictMeanings}</div>` : ""}
+            <div>
+              <strong style="font-size:.86rem;">Wie gut kennst du das? (In deinem Konto speichern):</strong>
+              <div class="row" style="margin-top:6px;">
+                <button class="btn btn-danger btn-sm" id="evalHard">🔴 Schwer (→ Wiederholen)</button>
+                <button class="btn btn-warning btn-sm" id="evalMid">🟡 Unsicher (→ In ${overallLvl} speichern)</button>
+                <button class="btn btn-success btn-sm" id="evalEasy">🟢 Kann ich! (+10 XP)</button>
+              </div>
+            </div>
+          </div>`;
+        document.getElementById("evalSpeakBtn").addEventListener("click", () => speak(text, lang==="en"?"en-US":"de-DE", audioUrl));
+        box.querySelectorAll("[data-wc]").forEach(b => b.addEventListener("click", () => { speak(b.dataset.wc, lang==="en"?"en-US":"de-DE"); document.getElementById("evalInput").value = b.dataset.wc; }));
+        const saveRated = m => {
+          const it = addCustomItem({ subj:lang, en:document.getElementById("evalSaveF").value.trim(), de:document.getElementById("evalSaveB").value.trim()||`(${overallLvl})`, lvl:m==="easy"?"CUSTOM":overallLvl, cat:"Einschätzer", ex:tokens.length>1?"Satz":"" }, false, true);
+          if (it) {
+            if (m==="hard" && !state.reviewIds.includes(it.id)) state.reviewIds.push(it.id);
+            else if (m==="easy") { if(!state.masteredIds.includes(it.id))state.masteredIds.push(it.id); state.xp+=10; }
+            saveProgress(); renderDictionaryView();
+          }
+        };
+        document.getElementById("evalHard").addEventListener("click", () => saveRated("hard"));
+        document.getElementById("evalMid").addEventListener("click", () => saveRated("mid"));
+        document.getElementById("evalEasy").addEventListener("click", () => saveRated("easy"));
+      }
+      document.getElementById("runEvalBtn").addEventListener("click", evaluateInputText);
+      document.getElementById("evalInput").addEventListener("keydown", e => { if(e.key==="Enter"){e.preventDefault();evaluateInputText();} });
+
+      // Direct Live Online Dictionary Search (no pack downloading!)
+      let liveSearchResults = [];
+      let liveSearchTimer = null;
+
+      async function runLiveOnlineDictSearch(query) {
+        const sf = document.getElementById("dictSubjectFilter").value;
+        if (!query || query.length < 2 || (sf !== "ALL" && sf !== "en" && sf !== "de")) {
+          liveSearchResults = [];
+          renderDictionaryListOnly();
+          return;
+        }
+        try {
+          const hits = [];
+          const reqs = [];
+          if (sf === "ALL" || sf === "en") {
+            reqs.push(
+              fetchTO(`https://api.datamuse.com/words?sp=${encodeURIComponent(query)}*&md=df&max=14`, 5000)
+                .then(r => r.json()).then(arr => {
+                  (arr || []).forEach(it => {
+                    const fTag = (it.tags||[]).find(t=>t.startsWith("f:"));
+                    const f = fTag ? parseFloat(fTag.slice(2)) : 1;
+                    const est = heuristicEstimate(it.word, "en", f);
+                    const def = it.defs?.[0] ? it.defs[0].replace(/^[a-z]+\t/,"") : "Live-Treffer (Englisch) · Klick 🔍 zum Übersetzen";
+                    hits.push({ id:`live_en_${it.word}`, subj:"en", en:it.word, de:def, lvl:est.lvl, cat:"Datamuse Live", isLive:true });
+                  });
+                }).catch(()=>{})
+            );
+          }
+          if (sf === "ALL" || sf === "de") {
+            reqs.push(
+              fetchTO(`https://de.wiktionary.org/w/api.php?action=opensearch&search=${encodeURIComponent(query)}&limit=12&format=json&origin=*`, 5000)
+                .then(r => r.json()).then(arr => {
+                  (arr?.[1] || []).forEach(w => {
+                    const est = heuristicEstimate(w, "de");
+                    hits.push({ id:`live_de_${w}`, subj:"de", en:w, de:"Wiktionary Live-Treffer · Klick 🔍 für Analyse/Übersetzung", lvl:est.lvl, cat:"Wiktionary Live", isLive:true });
+                  });
+                }).catch(()=>{})
+            );
+          }
+          await Promise.allSettled(reqs);
+          liveSearchResults = hits;
+          renderDictionaryListOnly();
+        } catch {}
+      }
+
+      function getLocalDictMatches() {
+        const q = document.getElementById("dictSearchInput").value.trim().toLowerCase(), sf = document.getElementById("dictSubjectFilter").value;
+        return getAllItems().filter(x => (sf==="ALL" || x.subj===sf) && (!q || x.en.toLowerCase().includes(q) || x.de.toLowerCase().includes(q) || x.cat.toLowerCase().includes(q)));
+      }
+
+      function renderDictionaryListOnly() {
+        const local = getLocalDictMatches();
+        const combined = [...local, ...liveSearchResults.filter(l => !local.some(x => x.en.toLowerCase() === l.en.toLowerCase()))];
+        document.getElementById("dictMatchCount").textContent = combined.length > 80 ? `Zeige 80 von ${combined.length}` : `${combined.length} Treffer (Lokal + Live-Wörterbuch)`;
+        const listEl = document.getElementById("dictList"), slice = combined.slice(0, 80);
+        if (!slice.length) {
+          listEl.innerHTML = `<div class="card" style="grid-column:1/-1;"><h3>Keine direkten Treffer</h3><p class="muted">Gib dein Wort oben in den <strong>🔍 Wort- &amp; Satz-Einschätzer</strong> ein!</p></div>`;
+          return;
+        }
+        listEl.innerHTML = slice.map(w => `
+          <div class="dict-item">
+            <div class="between">
+              <span class="badge badge-${w.lvl}">${SUBJECTS[w.subj].icon} ${w.lvl}${w.isLive?" · 🌐 Live":""}</span>
+              <div class="row" style="gap:5px;">
+                <button class="btn btn-sm" data-toeval="${esc(w.en)}" data-evlang="${w.subj==="de"?"de":"en"}" title="Einschätzen &amp; Speichern">🔍</button>
+                <button class="speaker-btn" data-dsp="${esc(w.en)}" data-dsplang="${SUBJECTS[w.subj].lang}">🔊</button>
+              </div>
+            </div>
+            <div><strong>${esc(w.en)}</strong><div style="color:var(--primary);font-weight:700;font-size:.87rem;">${esc(w.de)}</div></div>
+            ${w.ex ? `<div class="muted" style="font-size:.78rem;font-style:italic;">${esc(w.ex)}</div>` : ""}
+          </div>`).join("");
+        listEl.querySelectorAll("[data-dsp]").forEach(b => b.addEventListener("click", () => speak(b.dataset.dsp, b.dataset.dsplang)));
+        listEl.querySelectorAll("[data-toeval]").forEach(b => b.addEventListener("click", () => {
+          document.getElementById("evalInput").value = b.dataset.toeval;
+          document.getElementById("evalLang").value = b.dataset.evlang;
+          evaluateInputText();
+          window.scrollTo({ top:0, behavior:"smooth" });
+        }));
+      }
+
+      function renderDictionaryView() {
+        renderDictionaryListOnly();
+        const q = document.getElementById("dictSearchInput").value.trim();
+        if (q.length >= 2) runLiveOnlineDictSearch(q);
+      }
+
+      document.getElementById("dictSearchInput").addEventListener("input", () => {
+        renderDictionaryListOnly();
+        clearTimeout(liveSearchTimer);
+        const q = document.getElementById("dictSearchInput").value.trim();
+        if (q.length >= 2) liveSearchTimer = setTimeout(() => runLiveOnlineDictSearch(q), 340);
+        else liveSearchResults = [];
+      });
+      document.getElementById("dictSubjectFilter").addEventListener("change", renderDictionaryView);
+      document.getElementById("forceLiveSearchBtn").addEventListener("click", () => runLiveOnlineDictSearch(document.getElementById("dictSearchInput").value.trim()));
+      document.getElementById("practiceFilteredDictBtn").addEventListener("click", () => startPractice({ title:"📖 Lexikon-Training", items:shuffle(getLocalDictMatches()).slice(0,20), mode:"flashcard", returnView:"dict" }));
+
+      /* ===========================================================
+         9. CUSTOM ITEMS, IMPORT, BACKUP & BOOTSTRAP
+         =========================================================== */
+      function addCustomItem({ subj="en", en, de, lvl="CUSTOM", cat="Custom", ex="", audio="" }, silent = false, returnObj = false) {
+        if (!en || !de) return null;
+        const existing = getAllItems().find(x => x.subj === subj && x.en.toLowerCase() === en.toLowerCase());
+        if (existing) { if (!silent) showToast(`„${en}“ bereits vorhanden.`); return returnObj ? existing : false; }
+        const obj = { id:`cust_${Date.now()}_${Math.floor(Math.random()*1e5)}`, subj, en, de, lvl, cat, ex, audio, isCustom:true };
+        state.customItems.unshift(obj);
+        if (!silent) { saveProgress(); showToast(`✅ „${en}“ im Konto gespeichert!`); }
+        return returnObj ? obj : true;
+      }
+
+      function renderCustomView() {
+        document.getElementById("customCount").textContent = state.customItems.length;
+        const el = document.getElementById("customWordList");
+        if (!state.customItems.length) { el.innerHTML = `<div class="muted">Noch keine Custom-Inhalte gespeichert.</div>`; return; }
+        el.innerHTML = state.customItems.slice(0, 100).map(w => `<div class="dict-item"><div class="between"><span class="badge badge-${w.lvl}">${SUBJECTS[w.subj]?.icon||"⭐"} ${w.lvl}</span><button class="btn btn-sm btn-danger" data-cdel="${esc(w.id)}">🗑️</button></div><div><strong>${esc(w.en)}</strong><div style="color:var(--primary);font-weight:700;">${esc(w.de)}</div></div></div>`).join("");
+        el.querySelectorAll("[data-cdel]").forEach(b => b.addEventListener("click", () => {
+          const id = b.dataset.cdel;
+          state.customItems = state.customItems.filter(x => x.id !== id);
+          state.masteredIds = state.masteredIds.filter(m => m !== id);
+          state.reviewIds = state.reviewIds.filter(r => r !== id);
+          saveProgress(); renderCustomView();
+        }));
+      }
+
+      document.getElementById("addWordForm").addEventListener("submit", e => {
+        e.preventDefault();
+        addCustomItem({ subj:document.getElementById("newSubj").value, en:document.getElementById("newEn").value.trim(), de:document.getElementById("newDe").value.trim(), lvl:document.getElementById("newLvl").value, cat:document.getElementById("newCat").value.trim()||"Custom", ex:document.getElementById("newEx").value.trim() });
+        document.getElementById("newEn").value=""; document.getElementById("newDe").value=""; document.getElementById("newEx").value=""; renderCustomView();
+      });
+
+      function importBulk(txt) {
+        const lines = txt.split(/\r?\n/).map(l=>l.trim()).filter(Boolean), ex = new Set(getAllItems().map(x => `${x.subj}|${x.en.toLowerCase()}`)), news = [], ts = Date.now();
+        lines.forEach((line, i) => {
+          const p = line.split(/\s*[;=\t]\s*/); if (p.length < 2) return;
+          const en=p[0].trim(), de=p[1].trim(), sCand=p[2]?.trim().toLowerCase(), subj=SUBJECTS[sCand]?sCand:state.activeSubject;
+          const lCand=p[3]?.trim().toUpperCase(), lvl=LEVEL_INFO[lCand]?lCand:"CUSTOM", key=`${subj}|${en.toLowerCase()}`;
+          if (en && de && !ex.has(key)) { ex.add(key); news.push({ id:`cust_${ts}_${i}`, subj, en, de, lvl, cat:"Import", ex:p[4]?.trim()||"", audio:"", isCustom:true }); }
+        });
+        if (news.length) { state.customItems = [...news, ...state.customItems]; saveProgress(); }
+        renderCustomView(); showToast(news.length ? `📥 ${news.length} Einträge importiert!` : "Keine neuen Einträge.");
+      }
+
+      document.getElementById("runBulkImportBtn").addEventListener("click", () => { const t=document.getElementById("bulkImportText").value; if(!t.trim())return; importBulk(t); document.getElementById("bulkImportText").value=""; });
+      document.getElementById("bulkFileInput").addEventListener("change", e => { const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=()=>importBulk(String(r.result||"")); r.readAsText(f,"UTF-8"); e.target.value=""; });
+      document.getElementById("exportDataBtn").addEventListener("click", () => { const b=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download=`lexiflow-${currentUser?.username||"backup"}.json`; a.click(); });
+      document.getElementById("resetProgressBtn").addEventListener("click", () => { if(!confirm("XP & Fortschritt dieses Kontos zurücksetzen?"))return; state.xp=0; state.streak=0; state.masteredIds=[]; state.reviewIds=[]; state.placementLevels={}; saveProgress(); renderCustomView(); showToast("Zurückgesetzt."); });
+
+      // Bootstrap
+      populateDropdowns();
+      applyTheme();
+      updateCloudBadge();
+      if ("speechSynthesis" in window) window.speechSynthesis.getVoices();
+
+      (async () => {
+        try {
+          const sess = JSON.parse(localStorage.getItem(SESSION_KEY) || "null");
+          if (sess && sess.username) {
+            if (sess.isGuest) {
+              const g = JSON.parse(localStorage.getItem("lexiflow_guest_prog") || "null");
+              await loginUserSession("Gast", g || defaultProgress(), true);
+              return;
+            }
+            const accs = getLocalAccounts();
+            let prog = accs[sess.username]?.progress || null;
+            if (getCloudConfig()) {
+              try {
+                const r = await cloudFetch(`lexiflow_users?username=eq.${encodeURIComponent(sess.username)}&select=progress`);
+                if (r.ok) { const rows = await r.json(); if (rows[0]?.progress) prog = rows[0].progress; }
+              } catch {}
+            }
+            if (prog) { await loginUserSession(sess.username, prog, false); return; }
+          }
+        } catch {}
+        switchView("auth");
+      })();
+    })();
+  </script>
+</body>
+</html>
